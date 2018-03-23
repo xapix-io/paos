@@ -1,0 +1,36 @@
+image: openjdk:8
+
+cache:
+  key: maven_repository
+  paths:
+    - .m2/repository/
+
+stages:
+  - test
+  - build
+  - deploy
+
+before_script:
+  - apt-get update
+  - apt-get install -y --no-install-recommends rlwrap maven
+  - curl -O https://download.clojure.org/install/linux-install-1.9.0.358.sh
+  - chmod +x linux-install-1.9.0.358.sh
+  - ./linux-install-1.9.0.358.sh
+
+test:
+  stage: test
+  script:
+    - clj -Sdeps "{:mvn/local-repo \".m2/repository\"}" -A:test
+
+build:
+  stage: build
+  script:
+    - clj -Sdeps "{:mvn/local-repo \".m2/repository\"}" -A:uberjar
+
+deploy:
+  stage: deploy
+  script:
+    # Uncomment when the [issue](https://dev.clojure.org/jira/browse/TDEPS-54) is resolved
+    # - clj -Sdeps "{:mvn/local-repo \".m2/repository\"}" -Spom
+    - clj -Spom
+    - mvn -s .m2/settings.xml deploy

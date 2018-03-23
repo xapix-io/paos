@@ -1,0 +1,20 @@
+{:deps {org.clojure/clojure {:mvn/version "1.9.0"}
+        org.clojure/data.xml {:mvn/version "0.2.0-alpha5"}
+        org.clojure/data.zip {:mvn/version "0.1.2"}
+        org.reficio/soap-builder {:mvn/version "1.0.0-SNAPSHOT"}
+        selmer {:mvn/version "1.11.7"}}
+ :mvn/repos {"reficio" {:url "http://repo.reficio.org/maven/"}
+             "soapui" {:url "http://www.soapui.org/repository/maven2"}
+             "enonic" {:url "http://repo.enonic.com/public/"}
+             "central" {:url "https://repo1.maven.org/maven2/"}
+             "clojars" {:url "https://clojars.org/repo/"}}
+ :paths ["src/main"]
+ :aliases {:test {:extra-paths ["src/test"]
+                  :extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner"
+                                                          :sha "76568540e7f40268ad2b646110f237a60295fa3c"}}
+                  :main-opts ["-m" "cognitect.test-runner" "-d" "src/test"]}
+           :uberjar {:extra-deps {pack/pack.alpha {:git/url "https://github.com/juxt/pack.alpha.git"
+                                                   :sha "e6d0691c5f58135e1ef6fb1c9dda563611d36205"}}
+                     :main-opts ["-m" "mach.pack.alpha.capsule" "deps.edn" "dist/xapix/soap-clj.jar"]}
+           :cider {:extra-deps {refactor-nrepl {:mvn/version "2.4.0-SNAPSHOT"}}
+                   :extra-paths ["src/test"]}}}
