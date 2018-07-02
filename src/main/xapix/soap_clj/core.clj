@@ -7,8 +7,9 @@
 (comment
 
   (def x
-    (wsdl-parser/parse-wsdl "resources/fleetboard_com_DrivingTimesAndRestPeriodsService.wsdl"))
+    (wsdl-parser/parse-wsdl "resources/airlinesService.xml"))
 
   x
+
 
   )
