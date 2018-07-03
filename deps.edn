@@ -5,10 +5,25 @@
         selmer                   {:mvn/version "1.11.8"}
         cheshire                 {:mvn/version "5.8.0"}}
 
- :mvn/repos {"reficio" {:url "http://repo.reficio.org/maven/"}
-             "soapui"  {:url "http://www.soapui.org/repository/maven2"}
-             "enonic"  {:url "http://repo.enonic.com/public/"}
-             "central" {:url "https://repo1.maven.org/maven2/"}
-             "clojars" {:url "https://clojars.org/repo/"}}
+ :mvn/repos {"reficio"  {:url "http://repo.reficio.org/maven/"}
+             "soapui"   {:url "http://www.soapui.org/repository/maven2"}
+             "enonic"   {:url "http://repo.enonic.com/public/"}
+             "central"  {:url "https://repo1.maven.org/maven2/"}
+             "clojars"  {:url "https://clojars.org/repo/"}
+             "sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}
 
- :paths ["src"]}
+ :paths ["src"]
+
+ :aliases
+ {:1.8 {:override-deps {org.clojure/clojure {:mvn/version "1.8.0"}}}
+  :1.9 {:override-deps {org.clojure/clojure {:mvn/version "1.9.0"}}}
+  :master {:override-deps {org.clojure/clojure {:mvn/version "1.10.0-master-SNAPSHOT"}}}
+
+  :test {:extra-paths ["test"]
+         :extra-deps {org.clojure/test.check {:mvn/version "RELEASE"}}}
+
+  :runner {:extra-deps {com.cognitect/test-runner
+                        {:git/url "https://github.com/cognitect-labs/test-runner"
+                         :sha "76568540e7f40268ad2b646110f237a60295fa3c"}}
+           :main-opts ["-m" "cognitect.test-runner"
+                       "-d" "test"]}}}

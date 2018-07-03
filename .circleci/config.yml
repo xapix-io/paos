@@ -1,0 +1,106 @@
+defaults: &defaults
+  docker:
+    - image: clojure:tools-deps
+  working_directory: ~/repo
+
+version: 2
+jobs:
+  checkout_code:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: mkdir -p workspace
+      - save_cache:
+          key: v1-repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ~/repo
+
+  test-1.8:
+    <<: *defaults
+    steps:
+
+      - restore_cache:
+          key: v1-repo-{{ .Branch }}-{{ .Revision }}
+
+      - restore_cache:
+          key: 1.8-{{ checksum "deps.edn" }}
+
+      - run:
+          name: Test with clojure 1.8
+          type: shell
+          command: |
+            clj -A:1.8:test:runner
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: 1.8-{{ checksum "deps.edn" }}
+
+  test-1.9:
+    <<: *defaults
+    steps:
+
+      - restore_cache:
+          key: v1-repo-{{ .Branch }}-{{ .Revision }}
+
+      - restore_cache:
+          key: 1.9-{{ checksum "deps.edn" }}
+
+      - run:
+          name: Test with clojure 1.9
+          type: shell
+          command: |
+            clj -A:1.9:test:runner
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: 1.9-{{ checksum "deps.edn" }}
+
+  test-1.10:
+    <<: *defaults
+    steps:
+
+      - restore_cache:
+          key: v1-repo-{{ .Branch }}-{{ .Revision }}
+
+      - restore_cache:
+          key: 1.10-{{ checksum "deps.edn" }}
+
+      - run:
+          name: Test with clojure 1.10-master
+          type: shell
+          command: |
+            clj -A:master:test:runner
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: 1.10-{{ checksum "deps.edn" }}
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - checkout_code:
+          filters:
+            tags:
+              only: /.*/
+      - test-1.8:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - checkout_code
+      - test-1.9:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - checkout_code
+      - test-1.10:
+          filters:
+            tags:
+              only: /.*/
+          requires:
+            - checkout_code
