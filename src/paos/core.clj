@@ -1,5 +1,5 @@
-(ns xapix.soap-clj.core
-  (:require [xapix.soap-clj.wsdl-parser :as wsdl-parser]
+(ns paos.core
+  (:require [paos.wsdl-parser :as wsdl-parser]
             [cheshire.core :refer [generate-string]]))
 
 (defn decompose-wsdl [wsdl-path]
@@ -14,6 +14,5 @@
     (wsdl-parser/parse-wsdl "resources/airlinesService.xml"))
 
   x
-
 
   )

@@ -1,6 +1,6 @@
-(ns xapix.wsdl-parser-test
+(ns paos.wsdl-parser-test
   (:require [clojure.test :as t]
-            [xapix.soap-clj.wsdl-parser :as wsdl-parser]))
+            [paos.wsdl-parser :as wsdl-parser]))
 
 (t/deftest parse-comment
 

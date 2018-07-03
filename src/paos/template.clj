@@ -1,4 +1,4 @@
-(ns xapix.soap-clj.template
+(ns paos.template
   (:require [clojure.data.xml :as xml]
             [clojure.string :as string]))
 

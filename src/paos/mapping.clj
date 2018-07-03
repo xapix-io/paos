@@ -1,6 +1,6 @@
-(ns xapix.soap-clj.mapping
+(ns paos.mapping
   (:require [clojure.string :as string]
-            [xapix.soap-clj.template :refer [sanitize-tag ->attr-name]]))
+            [paos.template :refer [sanitize-tag ->attr-name]]))
 
 (declare make-mapping build-mapping)
 

@@ -1,9 +1,9 @@
-(ns xapix.soap-clj.wsdl-parser
+(ns paos.wsdl-parser
   (:require [clojure.data.xml :as xml]
             [clojure.java.io :as io]
             [clojure.string :as string]
-            [xapix.soap-clj.template :as template]
-            [xapix.soap-clj.mapping :as mapping])
+            [paos.template :as template]
+            [paos.mapping :as mapping])
   (:import [org.reficio.ws.builder.core SoapOperationImpl Wsdl]
            org.reficio.ws.SoapContext))
 
