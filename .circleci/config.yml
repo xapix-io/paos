@@ -29,7 +29,7 @@ jobs:
           name: Test with clojure 1.8
           type: shell
           command: |
-            clj -A:1.8:test:runner
+            clojure -A:1.8:test:runner
 
       - save_cache:
           paths:
@@ -50,7 +50,7 @@ jobs:
           name: Test with clojure 1.9
           type: shell
           command: |
-            clj -A:1.9:test:runner
+            clojure -A:1.9:test:runner
 
       - save_cache:
           paths:
@@ -71,7 +71,7 @@ jobs:
           name: Test with clojure 1.10-master
           type: shell
           command: |
-            clj -A:master:test:runner
+            clojure -A:master:test:runner
 
       - save_cache:
           paths:
