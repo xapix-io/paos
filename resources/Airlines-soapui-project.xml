@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="3f157bb6-8b1b-44df-8435-d1a632fad50f" activeEnvironment="Default" name="Airlines" resourceRoot="" soapui-version="5.4.0" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" id="b2e27fff-feb1-4a95-a26d-5bfb9d101cef" wsaVersion="NONE" name="AirlinesV1SoapServiceSoapBinding" type="wsdl" bindingName="{http://v1.airlines.cache.conducivetech.com/}AirlinesV1SoapServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="file:/Users/delaguardo/Projects/xapix/soap-clj/resources/airlinesService.xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/Users/delaguardo/Projects/xapix/soap-clj/resources/airlinesService.xml"><con:part><con:url>file:/Users/delaguardo/Projects/xapix/soap-clj/resources/airlinesService.xml</con:url><con:content><![CDATA[<wsdl:definitions name="AirlinesV1SoapService" targetNamespace="http://v1.airlines.cache.conducivetech.com/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:tns="http://v1.airlines.cache.conducivetech.com/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http">
+  <wsdl:types>
+    <xs:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="http://v1.airlines.cache.conducivetech.com/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="airlineByFsCode" type="tns:airlineByFsCode"/>
+      <xs:element name="airlineByFsCodeResponse" type="tns:airlineByFsCodeResponse"/>
+      <xs:element name="airlineByIcao" type="tns:airlineByIcao"/>
+      <xs:element name="airlineByIcaoResponse" type="tns:airlineByIcaoResponse"/>
+      <xs:element name="airlines" type="tns:airlines"/>
+      <xs:element name="airlinesByIata" type="tns:airlinesByIata"/>
+      <xs:element name="airlinesByIataForDate" type="tns:airlinesByIataForDate"/>
+      <xs:element name="airlinesByIataForDateResponse" type="tns:airlinesByIataForDateResponse"/>
+      <xs:element name="airlinesByIataResponse" type="tns:airlinesByIataResponse"/>
+      <xs:element name="airlinesByIcao" type="tns:airlinesByIcao"/>
+      <xs:element name="airlinesByIcaoResponse" type="tns:airlinesByIcaoResponse"/>
+      <xs:element name="airlinesResponse" type="tns:airlinesResponse"/>
+      <xs:element name="allAirlines" type="tns:allAirlines"/>
+      <xs:element name="allAirlinesResponse" type="tns:allAirlinesResponse"/>
+      <xs:element name="currentAirlines" type="tns:currentAirlines"/>
+      <xs:element name="currentAirlinesResponse" type="tns:currentAirlinesResponse"/>
+      <xs:complexType name="airlineByIcao">
+        <xs:sequence>
+          <xs:element name="appId" type="xs:string"/>
+          <xs:element name="appKey" type="xs:string"/>
+          <xs:element name="icaoCode" type="xs:string"/>
+          <xs:element name="year" type="xs:int"/>
+          <xs:element name="month" type="xs:int"/>
+          <xs:element name="day" type="xs:int"/>
+          <xs:element minOccurs="0" name="extendedOptions" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlineByIcaoResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:airline"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType final="extension restriction" name="airline">
+        <xs:all>
+          <xs:element minOccurs="0" name="fs" type="xs:string"/>
+          <xs:element minOccurs="0" name="iata" type="xs:string"/>
+          <xs:element minOccurs="0" name="icao" type="xs:string"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="phoneNumber" type="xs:string"/>
+          <xs:element name="active" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="dateFrom" type="xs:string"/>
+          <xs:element minOccurs="0" name="dateTo" type="xs:string"/>
+          <xs:element minOccurs="0" name="category" type="xs:string"/>
+        </xs:all>
+      </xs:complexType>
+      <xs:complexType name="airlinesByIata">
+        <xs:sequence>
+          <xs:element name="appId" type="xs:string"/>
+          <xs:element name="appKey" type="xs:string"/>
+          <xs:element name="iataCode" type="xs:string"/>
+          <xs:element minOccurs="0" name="extendedOptions" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlinesByIataResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:airline"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlineByFsCode">
+        <xs:sequence>
+          <xs:element name="appId" type="xs:string"/>
+          <xs:element name="appKey" type="xs:string"/>
+          <xs:element name="code" type="xs:string"/>
+          <xs:element minOccurs="0" name="extendedOptions" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlineByFsCodeResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:airline"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlinesByIcao">
+        <xs:sequence>
+          <xs:element name="appId" type="xs:string"/>
+          <xs:element name="appKey" type="xs:string"/>
+          <xs:element name="icaoCode" type="xs:string"/>
+          <xs:element minOccurs="0" name="extendedOptions" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlinesByIcaoResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:airline"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="currentAirlines">
+        <xs:sequence>
+          <xs:element name="appId" type="xs:string"/>
+          <xs:element name="appKey" type="xs:string"/>
+          <xs:element minOccurs="0" name="extendedOptions" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="currentAirlinesResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:airline"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="allAirlines">
+        <xs:sequence>
+          <xs:element name="appId" type="xs:string"/>
+          <xs:element name="appKey" type="xs:string"/>
+          <xs:element minOccurs="0" name="extendedOptions" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="allAirlinesResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:airline"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlines">
+        <xs:sequence>
+          <xs:element name="appId" type="xs:string"/>
+          <xs:element name="appKey" type="xs:string"/>
+          <xs:element name="year" type="xs:int"/>
+          <xs:element name="month" type="xs:int"/>
+          <xs:element name="day" type="xs:int"/>
+          <xs:element minOccurs="0" name="extendedOptions" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlinesResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:airline"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlinesByIataForDate">
+        <xs:sequence>
+          <xs:element name="appId" type="xs:string"/>
+          <xs:element name="appKey" type="xs:string"/>
+          <xs:element name="iataCode" type="xs:string"/>
+          <xs:element name="year" type="xs:int"/>
+          <xs:element name="month" type="xs:int"/>
+          <xs:element name="day" type="xs:int"/>
+          <xs:element minOccurs="0" name="extendedOptions" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="airlinesByIataForDateResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:airline"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="APIException" type="tns:APIException"/>
+      <xs:complexType name="APIException">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="errorCode" type="xs:string"/>
+          <xs:element minOccurs="0" name="errorId" type="xs:string"/>
+          <xs:element minOccurs="0" name="httpStatusCode" type="xs:int"/>
+          <xs:element minOccurs="0" name="errorMessage" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="airlineByIcao">
+    <wsdl:part element="tns:airlineByIcao" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="allAirlinesResponse">
+    <wsdl:part element="tns:allAirlinesResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="currentAirlinesResponse">
+    <wsdl:part element="tns:currentAirlinesResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="APIException">
+    <wsdl:part element="tns:APIException" name="APIException"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="currentAirlines">
+    <wsdl:part element="tns:currentAirlines" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="allAirlines">
+    <wsdl:part element="tns:allAirlines" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlines">
+    <wsdl:part element="tns:airlines" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlinesByIataForDateResponse">
+    <wsdl:part element="tns:airlinesByIataForDateResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlinesByIata">
+    <wsdl:part element="tns:airlinesByIata" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlineByFsCode">
+    <wsdl:part element="tns:airlineByFsCode" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlinesByIcaoResponse">
+    <wsdl:part element="tns:airlinesByIcaoResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlinesByIcao">
+    <wsdl:part element="tns:airlinesByIcao" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlinesByIataResponse">
+    <wsdl:part element="tns:airlinesByIataResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlinesResponse">
+    <wsdl:part element="tns:airlinesResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlineByIcaoResponse">
+    <wsdl:part element="tns:airlineByIcaoResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlineByFsCodeResponse">
+    <wsdl:part element="tns:airlineByFsCodeResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="airlinesByIataForDate">
+    <wsdl:part element="tns:airlinesByIataForDate" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="airlinesService">
+    <wsdl:operation name="airlineByIcao">
+      <wsdl:input message="tns:airlineByIcao" name="airlineByIcao" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByIcaoRequest" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByIcaoRequest"></wsdl:input>
+      <wsdl:output message="tns:airlineByIcaoResponse" name="airlineByIcaoResponse" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByIcaoResponse" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByIcaoResponse"></wsdl:output>
+      <wsdl:fault message="tns:APIException" name="APIException" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByIcao/Fault/APIException"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlinesByIata">
+      <wsdl:input message="tns:airlinesByIata" name="airlinesByIata" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataRequest" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataRequest"></wsdl:input>
+      <wsdl:output message="tns:airlinesByIataResponse" name="airlinesByIataResponse" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataResponse" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataResponse"></wsdl:output>
+      <wsdl:fault message="tns:APIException" name="APIException" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIata/Fault/APIException"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlineByFsCode">
+      <wsdl:input message="tns:airlineByFsCode" name="airlineByFsCode" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByFsCodeRequest" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByFsCodeRequest"></wsdl:input>
+      <wsdl:output message="tns:airlineByFsCodeResponse" name="airlineByFsCodeResponse" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByFsCodeResponse" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByFsCodeResponse"></wsdl:output>
+      <wsdl:fault message="tns:APIException" name="APIException" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByFsCode/Fault/APIException"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlinesByIcao">
+      <wsdl:input message="tns:airlinesByIcao" name="airlinesByIcao" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIcaoRequest" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIcaoRequest"></wsdl:input>
+      <wsdl:output message="tns:airlinesByIcaoResponse" name="airlinesByIcaoResponse" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIcaoResponse" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIcaoResponse"></wsdl:output>
+      <wsdl:fault message="tns:APIException" name="APIException" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIcao/Fault/APIException"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="currentAirlines">
+      <wsdl:input message="tns:currentAirlines" name="currentAirlines" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/currentAirlinesRequest" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/currentAirlinesRequest"></wsdl:input>
+      <wsdl:output message="tns:currentAirlinesResponse" name="currentAirlinesResponse" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/currentAirlinesResponse" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/currentAirlinesResponse"></wsdl:output>
+      <wsdl:fault message="tns:APIException" name="APIException" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/currentAirlines/Fault/APIException"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="allAirlines">
+      <wsdl:input message="tns:allAirlines" name="allAirlines" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/allAirlinesRequest" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/allAirlinesRequest"></wsdl:input>
+      <wsdl:output message="tns:allAirlinesResponse" name="allAirlinesResponse" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/allAirlinesResponse" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/allAirlinesResponse"></wsdl:output>
+      <wsdl:fault message="tns:APIException" name="APIException" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/allAirlines/Fault/APIException"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlines">
+      <wsdl:input message="tns:airlines" name="airlines" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesRequest" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesRequest"></wsdl:input>
+      <wsdl:output message="tns:airlinesResponse" name="airlinesResponse" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesResponse" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesResponse"></wsdl:output>
+      <wsdl:fault message="tns:APIException" name="APIException" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlines/Fault/APIException"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlinesByIataForDate">
+      <wsdl:input message="tns:airlinesByIataForDate" name="airlinesByIataForDate" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataForDateRequest" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataForDateRequest"></wsdl:input>
+      <wsdl:output message="tns:airlinesByIataForDateResponse" name="airlinesByIataForDateResponse" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataForDateResponse" wsaw:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataForDateResponse"></wsdl:output>
+      <wsdl:fault message="tns:APIException" name="APIException" wsam:Action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataForDate/Fault/APIException"></wsdl:fault>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AirlinesV1SoapServiceSoapBinding" type="tns:airlinesService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="airlineByIcao">
+      <soap:operation soapAction="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByIcaoRequest" style="document"/>
+      <wsdl:input name="airlineByIcao">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="airlineByIcaoResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="APIException">
+        <soap:fault name="APIException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlinesByIata">
+      <soap:operation soapAction="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataRequest" style="document"/>
+      <wsdl:input name="airlinesByIata">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="airlinesByIataResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="APIException">
+        <soap:fault name="APIException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlineByFsCode">
+      <soap:operation soapAction="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByFsCodeRequest" style="document"/>
+      <wsdl:input name="airlineByFsCode">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="airlineByFsCodeResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="APIException">
+        <soap:fault name="APIException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlinesByIcao">
+      <soap:operation soapAction="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIcaoRequest" style="document"/>
+      <wsdl:input name="airlinesByIcao">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="airlinesByIcaoResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="APIException">
+        <soap:fault name="APIException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="currentAirlines">
+      <soap:operation soapAction="http://v1.airlines.cache.conducivetech.com/airlinesService/currentAirlinesRequest" style="document"/>
+      <wsdl:input name="currentAirlines">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="currentAirlinesResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="APIException">
+        <soap:fault name="APIException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="allAirlines">
+      <soap:operation soapAction="http://v1.airlines.cache.conducivetech.com/airlinesService/allAirlinesRequest" style="document"/>
+      <wsdl:input name="allAirlines">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="allAirlinesResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="APIException">
+        <soap:fault name="APIException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlines">
+      <soap:operation soapAction="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesRequest" style="document"/>
+      <wsdl:input name="airlines">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="airlinesResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="APIException">
+        <soap:fault name="APIException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="airlinesByIataForDate">
+      <soap:operation soapAction="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataForDateRequest" style="document"/>
+      <wsdl:input name="airlinesByIataForDate">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="airlinesByIataForDateResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="APIException">
+        <soap:fault name="APIException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="AirlinesV1SoapService">
+    <wsdl:port binding="tns:AirlinesV1SoapServiceSoapBinding" name="airlinesServicePort">
+      <soap:address location="https://api.flightstats.com/flex/airlines/soap/v1/airlinesService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint></con:endpoints><con:operation id="eddf0da5-b99a-4988-ae05-7a0754ae5b5b" isOneWay="false" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByFsCodeRequest" name="airlineByFsCode" bindingOperationName="airlineByFsCode" type="Request-Response" outputName="airlineByFsCodeResponse" inputName="airlineByFsCode" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="808a41a5-2f5a-4c20-b12d-b0ba025ae033" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlineByFsCode>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <code>?</code>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlineByFsCode>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByFsCodeRequest"/></con:call></con:operation><con:operation id="fd086a84-5647-4f9e-8017-de7d3880b6ce" isOneWay="false" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByIcaoRequest" name="airlineByIcao" bindingOperationName="airlineByIcao" type="Request-Response" outputName="airlineByIcaoResponse" inputName="airlineByIcao" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="cdd62248-8af3-43a2-99d1-2a0e57b4e776" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlineByIcao>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <icaoCode>?</icaoCode>
+         <year>?</year>
+         <month>?</month>
+         <day>?</day>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlineByIcao>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByIcaoRequest"/></con:call></con:operation><con:operation id="03f251a5-e758-416f-a44f-9750cec723df" isOneWay="false" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesRequest" name="airlines" bindingOperationName="airlines" type="Request-Response" outputName="airlinesResponse" inputName="airlines" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="20019f5e-0465-4c71-8adb-347ad041ba73" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlines>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <year>?</year>
+         <month>?</month>
+         <day>?</day>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlines>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesRequest"/></con:call></con:operation><con:operation id="d2f9de73-863d-4518-bce8-f36578dd217a" isOneWay="false" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataRequest" name="airlinesByIata" bindingOperationName="airlinesByIata" type="Request-Response" outputName="airlinesByIataResponse" inputName="airlinesByIata" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="373c967d-d11a-4699-8fea-25a6701ca3c6" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlinesByIata>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <iataCode>?</iataCode>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlinesByIata>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataRequest"/></con:call></con:operation><con:operation id="1a3d4c14-3a7d-4f36-9dbf-4a4fda82885d" isOneWay="false" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataForDateRequest" name="airlinesByIataForDate" bindingOperationName="airlinesByIataForDate" type="Request-Response" outputName="airlinesByIataForDateResponse" inputName="airlinesByIataForDate" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="39b2c094-f2e5-4583-9923-eefae4cf2bfc" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlinesByIataForDate>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <iataCode>?</iataCode>
+         <year>?</year>
+         <month>?</month>
+         <day>?</day>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlinesByIataForDate>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataForDateRequest"/></con:call></con:operation><con:operation id="bb8c6ab4-e8e6-4b37-a5d6-7ab8a7e4c5a4" isOneWay="false" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIcaoRequest" name="airlinesByIcao" bindingOperationName="airlinesByIcao" type="Request-Response" outputName="airlinesByIcaoResponse" inputName="airlinesByIcao" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="7c42f0d8-1631-42f1-bb04-57a0f718704c" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlinesByIcao>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <icaoCode>?</icaoCode>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlinesByIcao>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIcaoRequest"/></con:call></con:operation><con:operation id="f2bb9233-bf41-4d9f-9f31-31e00fb7b981" isOneWay="false" action="http://v1.airlines.cache.conducivetech.com/airlinesService/allAirlinesRequest" name="allAirlines" bindingOperationName="allAirlines" type="Request-Response" outputName="allAirlinesResponse" inputName="allAirlines" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="82f74aa7-0096-4d93-9f32-110efe8d0125" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:allAirlines>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:allAirlines>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://v1.airlines.cache.conducivetech.com/airlinesService/allAirlinesRequest"/></con:call></con:operation><con:operation id="0644a561-10f7-4ee1-90be-34d4c4c53440" isOneWay="false" action="http://v1.airlines.cache.conducivetech.com/airlinesService/currentAirlinesRequest" name="currentAirlines" bindingOperationName="currentAirlines" type="Request-Response" outputName="currentAirlinesResponse" inputName="currentAirlines" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="ff5e53c2-dfb5-49c8-a27c-e9257e335ba6" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:currentAirlines>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:currentAirlines>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://v1.airlines.cache.conducivetech.com/airlinesService/currentAirlinesRequest"/></con:call></con:operation></con:interface><con:testSuite id="38756b57-aef2-433e-bc18-3de16216b8fe" name="AirlinesV1SoapServiceSoapBinding TestSuite"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase id="da8ec72a-44a0-403d-8629-54c811e5667e" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="airlineByFsCode TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="28f7578e-7d8c-4161-9603-f0bff61188fe" name="airlineByFsCode"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>AirlinesV1SoapServiceSoapBinding</con:interface><con:operation>airlineByFsCode</con:operation><con:request name="airlineByFsCode" id="1f8f0707-81b2-4949-9b39-89c224a0da8a"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlineByFsCode>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <code>?</code>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlineByFsCode>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:wsaConfig action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByFsCodeRequest"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="0675fabd-cf83-46d5-83ce-b1fd3f9382af" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="airlineByIcao TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="7a13e64f-2928-4a61-ac13-04ec4fe3f801" name="airlineByIcao"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>AirlinesV1SoapServiceSoapBinding</con:interface><con:operation>airlineByIcao</con:operation><con:request name="airlineByIcao" id="38033810-2535-4745-9b98-4a3192df0022"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlineByIcao>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <icaoCode>?</icaoCode>
+         <year>?</year>
+         <month>?</month>
+         <day>?</day>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlineByIcao>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:wsaConfig action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlineByIcaoRequest"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="9bc02ecc-03eb-444b-afa1-1619ee47ad8e" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="airlines TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="9cde1f96-a2eb-4bf3-95e4-40786e84813c" name="airlines"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>AirlinesV1SoapServiceSoapBinding</con:interface><con:operation>airlines</con:operation><con:request name="airlines" id="9990b540-63a0-4162-8bdd-085dbd41e85c"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlines>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <year>?</year>
+         <month>?</month>
+         <day>?</day>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlines>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesRequest" mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="3cae7ad8-a456-4041-9e95-6b1151c44ecc" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="airlinesByIata TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="ab0e1a1f-85d2-4236-a60a-60d3aecaaab5" name="airlinesByIata"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>AirlinesV1SoapServiceSoapBinding</con:interface><con:operation>airlinesByIata</con:operation><con:request name="airlinesByIata" id="1b86fcac-db84-491f-b00d-fa4d4e508c3c"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlinesByIata>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <iataCode>?</iataCode>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlinesByIata>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:wsaConfig action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataRequest"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="ec3a98cf-ceff-4d59-af6d-4c328aaf6ec2" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="airlinesByIataForDate TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="acfbd1d1-0678-4772-a959-b1b7b22760ab" name="airlinesByIataForDate"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>AirlinesV1SoapServiceSoapBinding</con:interface><con:operation>airlinesByIataForDate</con:operation><con:request name="airlinesByIataForDate" id="18ed2e68-8e23-4424-9f3f-21fa38977e43"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlinesByIataForDate>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <iataCode>?</iataCode>
+         <year>?</year>
+         <month>?</month>
+         <day>?</day>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlinesByIataForDate>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:wsaConfig action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIataForDateRequest"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="55d92b78-37eb-4a8f-8002-34bf1e5f6d4a" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="airlinesByIcao TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="dd839296-684a-4010-8205-74163024dfa0" name="airlinesByIcao"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>AirlinesV1SoapServiceSoapBinding</con:interface><con:operation>airlinesByIcao</con:operation><con:request name="airlinesByIcao" id="bc1c419f-aab7-4da0-b87a-1d82ae0d477d"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:airlinesByIcao>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <icaoCode>?</icaoCode>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:airlinesByIcao>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:wsaConfig action="http://v1.airlines.cache.conducivetech.com/airlinesService/airlinesByIcaoRequest"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="a310c32b-ac55-455b-a42c-f3cf4b98f8d1" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="allAirlines TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="205aa73f-27df-4d06-b05d-3fcffe1b5098" name="allAirlines"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>AirlinesV1SoapServiceSoapBinding</con:interface><con:operation>allAirlines</con:operation><con:request name="allAirlines" id="6a707e52-0ed5-4e45-9141-6cdd34c98340"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:allAirlines>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:allAirlines>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:wsaConfig action="http://v1.airlines.cache.conducivetech.com/airlinesService/allAirlinesRequest"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="3e76fe2d-d905-44ec-838e-e4eb01fbd26f" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="currentAirlines TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="25998143-2b6f-4c49-96e6-cdc1e0e5226f" name="currentAirlines"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>AirlinesV1SoapServiceSoapBinding</con:interface><con:operation>currentAirlines</con:operation><con:request name="currentAirlines" id="1f928e39-5848-485c-ae2a-c285e811e2c5"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.flightstats.com/flex/airlines/soap/v1/airlinesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:currentAirlines>
+         <appId>?</appId>
+         <appKey>?</appKey>
+         <!--Optional:-->
+         <extendedOptions>?</extendedOptions>
+      </v1:currentAirlines>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:wsaConfig action="http://v1.airlines.cache.conducivetech.com/airlinesService/currentAirlinesRequest"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/></con:soapui-project>

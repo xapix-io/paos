@@ -95,18 +95,22 @@
               :namespace-aware false
               :include-node? #{:element :characters :comment})))
 
-(defn make-operation [^SoapContext ctx ^SoapOperationImpl operation]
-  (let [operation-name (.getSoapAction operation)
+(defn make-operation [^SoapContext ctx binding-builder ^SoapOperationImpl operation]
+  (let [operation-name (.getOperationName operation)
+        soap-action (.getSoapAction operation)
         input-template (.buildInputMessage operation ctx)
         output-template (.buildOutputMessage operation ctx)
         input (xml->map input-template)
         output (xml->map output-template)]
-    [operation-name {:input-template (template/build-template input)
+    [operation-name {:soap-action soap-action
+                     :input-template (template/build-template input)
+                     :input-xml input-template
                      :input (xml->map input-template)
-                     :input-mapping (mapping/build-mapping input)
+                     :input-mapping (mapping/build-mapping input template/sanitize-tag)
                      :output-template (template/build-template output)
+                     :output-xml output-template
                      :output (xml->map output-template)
-                     :output-mapping (mapping/build-mapping output)}]))
+                     :output-mapping (mapping/build-mapping output identity)}]))
 
 (defn make-binding
   ([^Wsdl wsdl ^String binding-name]
@@ -114,7 +118,7 @@
   ([^Wsdl wsdl ^String binding-name ^SoapContext ctx]
    (let [binding-builder (.find (.localPart (.binding wsdl) binding-name))]
      [binding-name {:operations (into {}
-                                      (map (partial make-operation ctx)
+                                      (map (partial make-operation ctx binding-builder)
                                            (.getOperations binding-builder)))
                     :url (first (.getServiceUrls binding-builder))}])))
 
@@ -129,3 +133,35 @@
                                (.getLocalPart binding)
                                ctx))
                (.getBindings wsdl)))))
+
+(comment
+
+  (def x
+    (parse-wsdl "/Users/delaguardo/Projects/xapix/soap-clj/resources/airlinesService.xml")
+    ;; (parse-wsdl "/Users/delaguardo/Downloads/Xapix/Account_Address.wsdl")
+    ;; (parse-wsdl "/tmp/foo.wsdl")
+    )
+
+  (clojure.pprint/pprint x)
+  (keys (get-in x ["SoftLayer_Account_Regional_Registry_Detail_Property_TypeBinding" :operations "getAllObjects"]))
+
+  (clojure.pprint/pprint (-> x first second :operations first second :input-mapping))
+
+  (def root
+    (-> "/Users/delaguardo/Projects/xapix/soap-clj/sample.xml"
+        clojure.java.io/file
+        clojure.xml/parse
+        clojure.zip/xml-zip)
+    )
+
+  (clojure.data.zip.xml/xml1-> root :soapenv:Envelope)
+
+  (def x
+    (-> "/Users/delaguardo/Downloads/Xapix/Account_Regional_Registry_Detail_Property_Type.wsdl.txt"
+        make-wsdl-url
+        make-wsdl))
+
+  (.saveWsdl x
+             (-> "/Users/delaguardo/Downloads/Xapix/Account_Regional_Registry_Detail_Property_Type.wsdl.txt"
+                 make-wsdl-url)
+             (io/file "/tmp/foo")))

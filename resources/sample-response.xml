@@ -1,0 +1,40 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://v1.airlines.cache.conducivetech.com/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <v1:airlineByIcaoResponse>
+            <return offset="?">
+                <fs>?</fs>
+                <iata>?</iata>
+                <icao>?</icao>
+                <name>?</name>
+                <phoneNumber>?</phoneNumber>
+                <active>?</active>
+                <dateFrom>?</dateFrom>
+                <dateTo>?</dateTo>
+                <category>?</category>
+            </return>
+            <return>
+                <fs>?</fs>
+                <iata>?</iata>
+                <icao>?</icao>
+                <name>?</name>
+                <phoneNumber>?</phoneNumber>
+                <active>?</active>
+                <dateFrom>?</dateFrom>
+                <dateTo>?</dateTo>
+                <category>?</category>
+            </return>
+            <return>
+                <fs>?</fs>
+                <iata>?</iata>
+                <icao>?</icao>
+                <name>?</name>
+                <phoneNumber>?</phoneNumber>
+                <active>?</active>
+                <dateFrom>?</dateFrom>
+                <dateTo>?</dateTo>
+                <category>?</category>
+            </return>
+        </v1:airlineByIcaoResponse>
+    </soapenv:Body>
+</soapenv:Envelope>

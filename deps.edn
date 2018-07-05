@@ -12,7 +12,7 @@
              "clojars"  {:url "https://clojars.org/repo/"}
              "sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}
 
- :paths ["src"]
+ :paths ["src" "resources"]
 
  :aliases
  {:1.8 {:override-deps {org.clojure/clojure {:mvn/version "1.8.0"}}}
