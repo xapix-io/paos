@@ -1,4 +1,4 @@
-(ns paos.sample-message
+(ns paos.service
   (:require [clojure.data.xml :as data-xml]
             [clojure.string :as string]
             [inflections.core :refer [plural]]
@@ -98,7 +98,7 @@
                                    v1))
     :otherwise   v2))
 
-(defprotocol Element
+(defprotocol Service
   (get-original [this])
   (get-tag      [this])
   (get-fields   [this])
@@ -140,13 +140,13 @@
 (defn- node->element [{:keys [tag attrs content]
                        :or   {content '()
                               attrs   {}}}
-                     comments
-                     original-xml]
+                      comments
+                      original-xml]
   (let [{:keys [type min-occurs max-occurs
                 optional enumeration]} (into {} (map parse-comment comments))
         fields                         (content->fields content type)]
     (reify
-      Element
+      Service
       (get-original [_] original-xml)
 
       (get-tag [_] tag)
@@ -191,21 +191,21 @@
                  {(fix-fn tag)
                   (merge (if-let [attrs (not-empty
                                          (->> attrs
-                                             (filter (fn [[_ attrv]]
-                                                       (= "?" attrv)))
-                                             (map (fn [[attr-name _]]
-                                                    [(fix-fn attr-name) {:__value nil
-                                                                         :__type  "string"}]))
-                                             (into {})))]
+                                              (filter (fn [[_ attrv]]
+                                                        (= "?" attrv)))
+                                              (map (fn [[attr-name _]]
+                                                     [(fix-fn attr-name) {:__value nil
+                                                                          :__type  "string"}]))
+                                              (into {})))]
                            {:__attrs attrs}
                            {})
                          (apply merge
                                 (-> this
                                     (get-fields)
                                     (->> (map (fn [c]
-                                               (if (satisfies? Element c)
-                                                 (->mapping c fix-fn)
-                                                 (into {} [c]))))))))})]
+                                                (if (satisfies? Service c)
+                                                  (->mapping c fix-fn)
+                                                  (into {} [c]))))))))})]
           (if (vector? m)
             {(-> tag fix-fn plural) m}
             m)))
@@ -220,7 +220,7 @@
                               attrs
                               (conj (into [(data-xml/cdata (str "{% with ctx=" tag " %}"))]
                                           (map (fn [c]
-                                                 (if (satisfies? Element c)
+                                                 (if (satisfies? Service c)
                                                    (->template c false)))
                                                (get-fields this)))
                                     (data-xml/cdata "{% endwith %}")))
@@ -235,15 +235,15 @@
                                     " %}")))
              (data-xml/element tag
                                (->> attrs
-                                   (map (fn [[attr-name attr-value]]
-                                          [attr-name (if (= attr-value "?")
-                                                       (str "{{ctx.__attrs." (tag-fix attr-name) ".__value}}"))]))
-                                   (into {}))
+                                    (map (fn [[attr-name attr-value]]
+                                           [attr-name (if (= attr-value "?")
+                                                        (str "{{ctx.__attrs." (tag-fix attr-name) ".__value}}"))]))
+                                    (into {}))
                                (let [fields (get-fields this)]
                                  (if (map? fields)
                                    (data-xml/cdata (str "{{ctx.__value}}"))
                                    (map (fn [c]
-                                          (if (satisfies? Element c)
+                                          (if (satisfies? Service c)
                                             (->template c false)
                                             (data-xml/cdata (str "{{ctx.__value}}"))))
                                         (get-fields this)))))

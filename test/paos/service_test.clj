@@ -1,27 +1,27 @@
-(ns paos.sample-message-test
-  (:require [paos.sample-message :as sut]
+(ns paos.service-test
+  (:require [paos.service :as sut]
             [clojure.test :as t]
             [clojure.java.io :as io]))
 
-(def sample-message (-> "sample_message.xml"
-                        io/resource
-                        slurp))
+(def service (-> "sample_message.xml"
+                 io/resource
+                 slurp))
 
-(def sample-message-response (-> "sample_message_response.xml"
-                                 io/resource
-                                 slurp))
+(def service-response (-> "sample_message_response.xml"
+                          io/resource
+                          slurp))
 
 (t/deftest xml->element
 
-  (let [element (sut/xml->element sample-message)]
+  (let [element (sut/xml->element service)]
 
     (t/testing "should return object with methods for working with xml as a map:"
 
-      (t/is (satisfies? sut/Element element))
+      (t/is (satisfies? sut/Service element))
 
       (t/testing "get-original returns original xml"
 
-        (t/is (= sample-message (sut/get-original element))))
+        (t/is (= service (sut/get-original element))))
 
       (t/testing "get-tag returns tag from current root"
 
@@ -35,21 +35,21 @@
 
         (t/is (= 2 (count (sut/get-fields element))))
 
-        (t/is (every? #(satisfies? sut/Element %)
+        (t/is (every? #(satisfies? sut/Service %)
                       (sut/get-fields element)))
 
         (let [deep-nested-children (-> element
                                        sut/get-fields
                                        second
                                        sut/get-fields)]
-          (t/is (every? #(satisfies? sut/Element %)
+          (t/is (every? #(satisfies? sut/Service %)
                         deep-nested-children))))
 
       (t/testing "get-paths returns list of all paths to leaf values in nested object"
 
         (let [paths (sut/get-paths element)]
           (t/is (= (inc (count (filter #(= % \?)
-                                       sample-message)))
+                                       service)))
                    (count paths)))
 
           (t/is (= {:path [:soapenv:Envelope :soapenv:Header :__value]}
@@ -119,7 +119,7 @@
       (t/testing "->parse-fn return function able to parse xml strings according to the mapping attached to element"
 
         (let [parse-fn (sut/->parse-fn element)
-              parsed-data (parse-fn sample-message-response)]
+              parsed-data (parse-fn service-response)]
 
           (t/testing "data parsed"
 

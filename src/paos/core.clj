@@ -18,6 +18,4 @@
   (def x
     (wsdl/parse "resources/airlinesService.xml"))
 
-  x
-
-  )
+  x)

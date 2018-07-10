@@ -1,7 +1,7 @@
 (ns paos.wsdl
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
-            [paos.sample-message :as sample-message])
+            [paos.service :as service])
   (:import [org.reficio.ws.builder.core SoapOperationImpl Wsdl]
            org.reficio.ws.SoapContext))
 
@@ -24,15 +24,15 @@
         soap-action     (.getSoapAction operation)
         input-template  (.buildInputMessage operation ctx)
         output-template (.buildOutputMessage operation ctx)
-        input-element   (sample-message/xml->element input-template)
-        output-element  (sample-message/xml->element output-template)]
+        input-element   (service/xml->element input-template)
+        output-element  (service/xml->element output-template)]
     [operation-name {:soap-action     soap-action
-                     :input-template  (sample-message/->template input-element)
-                     :input-xml       (sample-message/get-original input-element)
-                     :input-mapping   (sample-message/->mapping input-element)
-                     :output-template (sample-message/->template output-element)
-                     :output-xml      (sample-message/get-original output-element)
-                     :output-mapping  (sample-message/->mapping output-element)}]))
+                     :input-template  (service/->template input-element)
+                     :input-xml       (service/get-original input-element)
+                     :input-mapping   (service/->mapping input-element)
+                     :output-template (service/->template output-element)
+                     :output-xml      (service/get-original output-element)
+                     :output-mapping  (service/->mapping output-element)}]))
 
 (defn make-binding
   ([^Wsdl wsdl ^String binding-name]
