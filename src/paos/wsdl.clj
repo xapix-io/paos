@@ -24,15 +24,14 @@
         soap-action     (.getSoapAction operation)
         input-template  (.buildInputMessage operation ctx)
         output-template (.buildOutputMessage operation ctx)
-        input-element   (service/xml->element input-template)
-        output-element  (service/xml->element output-template)]
-    [operation-name {:soap-action     soap-action
-                     :input-template  (service/->template input-element)
-                     :input-xml       (service/get-original input-element)
-                     :input-mapping   (service/->mapping input-element)
-                     :output-template (service/->template output-element)
-                     :output-xml      (service/get-original output-element)
-                     :output-mapping  (service/->mapping output-element)}]))
+        service         (service/->service soap-action input-template output-template)]
+    [operation-name {:soap-action     (service/get-soap-action service)
+                     :input-template  (service/get-request-template service)
+                     :input-xml       (service/get-request-xml service)
+                     :input-mapping   (service/get-request-mapping service)
+                     :output-template (service/get-response-template service)
+                     :output-xml      (service/get-response-xml service)
+                     :output-mapping  (service/get-response-mapping service)}]))
 
 (defn make-binding
   ([^Wsdl wsdl ^String binding-name]

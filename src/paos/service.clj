@@ -98,7 +98,7 @@
                                    v1))
     :otherwise   v2))
 
-(defprotocol Service
+(defprotocol Element
   (get-original [this])
   (get-tag      [this])
   (get-fields   [this])
@@ -113,6 +113,15 @@
   (is-array?    [this])
   (is-leaf?     [this])
   (is-enum?     [this]))
+
+(defprotocol Service
+  (get-soap-action       [this])
+  (get-request-xml       [this])
+  (get-request-mapping   [this])
+  (get-request-template  [this])
+  (get-response-xml      [this])
+  (get-response-mapping  [this])
+  (get-response-template [this]))
 
 (defn- content->fields [content type]
   (let [content (filter #(not (string/starts-with? % "\n")) content)]
@@ -140,13 +149,13 @@
 (defn- node->element [{:keys [tag attrs content]
                        :or   {content '()
                               attrs   {}}}
-                      comments
-                      original-xml]
+                     comments
+                     original-xml]
   (let [{:keys [type min-occurs max-occurs
                 optional enumeration]} (into {} (map parse-comment comments))
         fields                         (content->fields content type)]
     (reify
-      Service
+      Element
       (get-original [_] original-xml)
 
       (get-tag [_] tag)
@@ -191,21 +200,21 @@
                  {(fix-fn tag)
                   (merge (if-let [attrs (not-empty
                                          (->> attrs
-                                              (filter (fn [[_ attrv]]
-                                                        (= "?" attrv)))
-                                              (map (fn [[attr-name _]]
-                                                     [(fix-fn attr-name) {:__value nil
-                                                                          :__type  "string"}]))
-                                              (into {})))]
+                                             (filter (fn [[_ attrv]]
+                                                       (= "?" attrv)))
+                                             (map (fn [[attr-name _]]
+                                                    [(fix-fn attr-name) {:__value nil
+                                                                         :__type  "string"}]))
+                                             (into {})))]
                            {:__attrs attrs}
                            {})
                          (apply merge
                                 (-> this
                                     (get-fields)
                                     (->> (map (fn [c]
-                                                (if (satisfies? Service c)
-                                                  (->mapping c fix-fn)
-                                                  (into {} [c]))))))))})]
+                                               (if (satisfies? Element c)
+                                                 (->mapping c fix-fn)
+                                                 (into {} [c]))))))))})]
           (if (vector? m)
             {(-> tag fix-fn plural) m}
             m)))
@@ -220,7 +229,7 @@
                               attrs
                               (conj (into [(data-xml/cdata (str "{% with ctx=" tag " %}"))]
                                           (map (fn [c]
-                                                 (if (satisfies? Service c)
+                                                 (if (satisfies? Element c)
                                                    (->template c false)))
                                                (get-fields this)))
                                     (data-xml/cdata "{% endwith %}")))
@@ -235,15 +244,15 @@
                                     " %}")))
              (data-xml/element tag
                                (->> attrs
-                                    (map (fn [[attr-name attr-value]]
-                                           [attr-name (if (= attr-value "?")
-                                                        (str "{{ctx.__attrs." (tag-fix attr-name) ".__value}}"))]))
-                                    (into {}))
+                                   (map (fn [[attr-name attr-value]]
+                                          [attr-name (if (= attr-value "?")
+                                                       (str "{{ctx.__attrs." (tag-fix attr-name) ".__value}}"))]))
+                                   (into {}))
                                (let [fields (get-fields this)]
                                  (if (map? fields)
                                    (data-xml/cdata (str "{{ctx.__value}}"))
                                    (map (fn [c]
-                                          (if (satisfies? Service c)
+                                          (if (satisfies? Element c)
                                             (->template c false)
                                             (data-xml/cdata (str "{{ctx.__value}}"))))
                                         (get-fields this)))))
@@ -277,3 +286,16 @@
                    :include-node? #{:element :characters :comment})
    []
    msg))
+
+(defn ->service [soap-action request-msg response-msg]
+  (let [request-element  (xml->element request-msg)
+        response-element (xml->element response-msg)]
+    (reify
+      Service
+      (get-soap-action       [_] soap-action)
+      (get-request-xml       [_] (get-original request-element))
+      (get-request-mapping   [_] (->mapping request-element))
+      (get-request-template  [_] (->template request-element))
+      (get-response-xml      [_] (get-original response-element))
+      (get-response-mapping  [_] (->mapping response-element))
+      (get-response-template [_] (->template response-element)))))

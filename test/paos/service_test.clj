@@ -17,7 +17,7 @@
 
     (t/testing "should return object with methods for working with xml as a map:"
 
-      (t/is (satisfies? sut/Service element))
+      (t/is (satisfies? sut/Element element))
 
       (t/testing "get-original returns original xml"
 
@@ -35,14 +35,14 @@
 
         (t/is (= 2 (count (sut/get-fields element))))
 
-        (t/is (every? #(satisfies? sut/Service %)
+        (t/is (every? #(satisfies? sut/Element %)
                       (sut/get-fields element)))
 
         (let [deep-nested-children (-> element
                                        sut/get-fields
                                        second
                                        sut/get-fields)]
-          (t/is (every? #(satisfies? sut/Service %)
+          (t/is (every? #(satisfies? sut/Element %)
                         deep-nested-children))))
 
       (t/testing "get-paths returns list of all paths to leaf values in nested object"
