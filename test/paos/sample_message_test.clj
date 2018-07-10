@@ -7,6 +7,10 @@
                         io/resource
                         slurp))
 
+(def sample-message-response (-> "sample_message_response.xml"
+                                 io/resource
+                                 slurp))
+
 (t/deftest xml->element
 
   (let [element (sut/xml->element sample-message)]
@@ -48,22 +52,22 @@
                                        sample-message)))
                    (count paths)))
 
-          (t/is (= {:path [:soapenv:Envelope :soapenv:Header]}
+          (t/is (= {:path [:soapenv:Envelope :soapenv:Header :__value]}
                    (first paths)))
 
           (t/testing "walking throw nested objects"
 
-            (t/is (= {:path [:soapenv:Envelope :soapenv:Body :book:SimpleObjectWithComplexTag :Field1]}
+            (t/is (= {:path [:soapenv:Envelope :soapenv:Body :book:SimpleObjectWithComplexTag :Field1 :__value]}
                      (second paths))))
 
           (t/testing "walking throw nested arrays by marking itself with 0"
 
-            (t/is (= {:path [:soapenv:Envelope :soapenv:Body :book:ArrayOneOrMoreRepetition 0 :ArrayField]}
+            (t/is (= {:path [:soapenv:Envelope :soapenv:Body :book:ArrayOneOrMoreRepetition 0 :ArrayField :__value]}
                      (nth paths 3))))
 
           (t/testing "walking throw nested objects to attributes"
 
-            (t/is (= {:path [:soapenv:Envelope :soapenv:Body :book:ComplexObjectWithComplexTag 0 :BookId :__attrs :BookType]}
+            (t/is (= {:path [:soapenv:Envelope :soapenv:Body :book:ComplexObjectWithComplexTag 0 :BookId :__attrs :BookType :__value]}
                      (nth paths 6))))))
 
       (t/testing "->mapping converts xml into map with arrays attributes and all nested structures. Tags converted into \"safe\" string representation"
@@ -110,4 +114,51 @@
                            "y" {:__value nil :__type "string"}}
                           :__value nil
                           :__type "string"}}]}}}}
-                   mapping)))))))
+                   mapping))))
+
+      (t/testing "->parse-fn return function able to parse xml strings according to the mapping attached to element"
+
+        (let [parse-fn (sut/->parse-fn element)
+              parsed-data (parse-fn sample-message-response)]
+
+          (t/testing "data parsed"
+
+            (t/is (= parsed-data
+                     {"Envelope"
+                      {"Header" {"__value" ""}
+                       "Body"
+                       {"SimpleObjectWithComplexTag"
+                        {"Field1" {"__value" "123"} "Field2" {"__value" "asdj"}}
+                        "ArrayOneOrMoreRepetition"
+                        {"ArrayFields"
+                         [{"__value" "1"} {"__value" "2"} {"__value" "3"} {"__value" "4"}]}
+                        "ArrayZeroOrMoreRepetition"
+                        {"ArrayFields"
+                         [{"__value" "123"}
+                          {"__value" "123"}
+                          {"__value" "123"}
+                          {"__value" "123"}
+                          {"__value" "123"}
+                          {"__value" "123"}
+                          {"__value" "123"}]}
+                        "ArrayWithNestedArray"
+                        {"ArrayFields"
+                         [{"NestedArrays" [{"__value" "q"} {"__value" "w"} {"__value" "e"}]}
+                          {"NestedArrays" [{"__value" "r"}]}
+                          {"NestedArrays" [{"__value" "t"} {"__value" "y"}]}]}
+                        "ComplexObjectWithComplexTag"
+                        {"BookIds"
+                         [{"__attrs" {"BookType" {"__value" "ewq"}}
+                           "ID" {"__value" "0"}
+                           "Type" {"SubType" {"__value" ".1"}}}
+                          {"__attrs" {"BookType" {"__value" "qwe"}}
+                           "ID" {"__value" "1"}
+                           "Type" {"SubType" {"__value" ".2"}}}]
+                         "RequestId" {"__value" "jshvjdshg"}
+                         "ArrayIds"
+                         [{"__attrs" {"x" {"__value" "x1"} "y" {"__value" "y1"}}
+                           "__value" "1"}
+                          {"__attrs" {"x" {"__value" "x2"} "y" {"__value" "y2"}}
+                           "__value" "2"}
+                          {"__attrs" {"x" {"__value" "x3"} "y" {"__value" "y3"}}
+                           "__value" "3"}]}}}}))))))))

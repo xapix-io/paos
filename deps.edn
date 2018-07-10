@@ -13,14 +13,14 @@
              "clojars"  {:url "https://clojars.org/repo/"}
              "sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}
 
- :paths ["src" "resources"]
+ :paths ["src"]
 
  :aliases
  {:1.8 {:override-deps {org.clojure/clojure {:mvn/version "1.8.0"}}}
   :1.9 {:override-deps {org.clojure/clojure {:mvn/version "1.9.0"}}}
   :master {:override-deps {org.clojure/clojure {:mvn/version "1.10.0-master-SNAPSHOT"}}}
 
-  :test {:extra-paths ["test"]
+  :test {:extra-paths ["test" "resources"]
          :extra-deps {org.clojure/test.check {:mvn/version "RELEASE"}}}
 
   :runner {:extra-deps {com.cognitect/test-runner

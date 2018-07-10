@@ -1,0 +1,57 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:book="http://www.cleverbuilder.com/BookService/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <book:SimpleObjectWithComplexTag>
+            <Field1>123</Field1>
+            <Field2>asdj</Field2>
+        </book:SimpleObjectWithComplexTag>
+        <book:ArrayOneOrMoreRepetition>
+            <ArrayField>1</ArrayField>
+            <ArrayField>2</ArrayField>
+            <ArrayField>3</ArrayField>
+            <ArrayField>4</ArrayField>
+        </book:ArrayOneOrMoreRepetition>
+        <book:ArrayZeroOrMoreRepetition>
+            <ArrayField>123</ArrayField>
+            <ArrayField>123</ArrayField>
+            <ArrayField>123</ArrayField>
+            <ArrayField>123</ArrayField>
+            <ArrayField>123</ArrayField>
+            <ArrayField>123</ArrayField>
+            <ArrayField>123</ArrayField>
+        </book:ArrayZeroOrMoreRepetition>
+        <book:ArrayWithNestedArray>
+            <ArrayField>
+                <NestedArray>q</NestedArray>
+                <NestedArray>w</NestedArray>
+                <NestedArray>e</NestedArray>
+            </ArrayField>
+            <ArrayField>
+                <NestedArray>r</NestedArray>
+            </ArrayField>
+            <ArrayField>
+                <NestedArray>t</NestedArray>
+                <NestedArray>y</NestedArray>
+            </ArrayField>
+        </book:ArrayWithNestedArray>
+        <book:ComplexObjectWithComplexTag>
+            <BookId BookType="ewq">
+                <ID>0</ID>
+                <Type>
+                    <SubType>.1</SubType>
+                </Type>
+            </BookId>
+            <BookId BookType="qwe">
+                <ID>1</ID>
+                <Type>
+                    <SubType>.2</SubType>
+                </Type>
+            </BookId>
+            <RequestId>jshvjdshg</RequestId>
+            <ArrayId x="x1" y="y1">1</ArrayId>
+            <ArrayId x="x2" y="y2">2</ArrayId>
+            <ArrayId x="x3" y="y3">3</ArrayId>
+        </book:ComplexObjectWithComplexTag>
+    </soapenv:Body>
+</soapenv:Envelope>

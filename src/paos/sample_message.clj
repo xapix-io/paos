@@ -2,17 +2,19 @@
   (:require [clojure.data.xml :as data-xml]
             [clojure.string :as string]
             [inflections.core :refer [plural]]
-            [clojure.xml :as xml]))
+            [clojure.data.zip.xml :as data-zip-xml]
+            [clojure.xml :as xml]
+            [clojure.zip :as zip]))
 
 (declare node->element)
 
-(defn tag-fix [tag-name]
+(defn- tag-fix [tag-name]
   (cond-> tag-name
     (keyword? tag-name) name
-    true (string/split #":")
-    true last))
+    true                (string/split #":")
+    true                last))
 
-(defn parse-comment [comment]
+(defn- parse-comment [comment]
   (cond
     (string/starts-with? comment "Optional:")
     {:optional true}
@@ -33,34 +35,86 @@
        :max-occurs (Integer/parseInt max)})
 
     (re-matches #"(type: ([a-zA-Z]+)|anonymous type) - enumeration: \[(.*)\]" comment)
-    (let [matcher (re-matches #"(type: ([a-zA-Z]+)|anonymous type) - enumeration: \[(.*)\]" comment)
+    (let [matcher     (re-matches #"(type: ([a-zA-Z]+)|anonymous type) - enumeration: \[(.*)\]" comment)
           enumeration (mapv string/trim
-                             (string/split (nth matcher 3)
+                            (string/split (nth matcher 3)
                                           #","))
-          type (string/trim (or (nth matcher 2) "anonymous type"))]
+          type        (string/trim (or (nth matcher 2) "anonymous type"))]
       {:enumeration enumeration
-       :type type})
+       :type        type})
 
     :otherwise
     nil))
 
+(defn- xml->map [root {:keys [path]}]
+  (loop [fp (first path) rp (rest path) path-to-update []]
+    (case fp
+      0        (assoc-in {}
+                         (map tag-fix (conj path-to-update (-> rp first plural keyword)))
+                         (mapv #(xml->map % {:path (rest rp)})
+                               (apply data-zip-xml/xml->
+                                      root
+                                      (conj path-to-update (first rp)))))
+      :__attrs (assoc-in {}
+                         (map tag-fix (conj path-to-update :__attrs (first rp) :__value))
+                         (data-zip-xml/attr (if (not-empty path-to-update)
+                                              (apply data-zip-xml/xml1->
+                                                     root
+                                                     path-to-update)
+                                              root)
+                                            (first rp)))
+      :__value (assoc-in {}
+                         (map tag-fix (conj path-to-update :__value))
+                         (data-zip-xml/text
+                          (apply data-zip-xml/xml1->
+                                 root
+                                 path-to-update)))
+      (recur (first rp) (rest rp) (conj path-to-update fp)))))
+
+(defn- deep-merge
+  "Like merge, but merges maps recursively."
+  [& maps]
+  (if (every? map? maps)
+    (apply merge-with deep-merge maps)
+    (last maps)))
+
+(defn- deep-merge-with
+  "Like merge-with, but merges maps recursively, applying the given fn
+  only when there's a non-map at a particular level."
+  [f & maps]
+  (apply
+   (fn m [& maps]
+     (if (every? map? maps)
+       (apply merge-with m maps)
+       (apply f maps)))
+   maps))
+
+(defn- custom-merge [v1 v2]
+  (cond
+    (map? v1)    (deep-merge-with custom-merge v1 v2)
+    (vector? v1) (vec (map-indexed (fn [idx v1]
+                                     (deep-merge-with custom-merge
+                                                      v1 (nth v2 idx)))
+                                   v1))
+    :otherwise   v2))
+
 (defprotocol Element
   (get-original [this])
-  (get-tag [this])
-  (get-fields [this])
-  (get-attrs [this])
-  (get-type [this])
-  (get-path [this] [this fix-fn])
-  (get-paths [this] [this fix-fn] [this fix-fn path])
-  (->mapping [this] [this fix-fn])
-  (->template [this] [this root?])
-  (->parse-fn [this])
+  (get-tag      [this])
+  (get-fields   [this])
+  (get-attrs    [this])
+  (get-type     [this])
+  (get-path     [this] [this fix-fn])
+  (get-paths    [this] [this fix-fn] [this fix-fn path])
+  (->mapping    [this] [this fix-fn])
+  (->template   [this] [this root?])
+  (->parse-fn   [this])
   (is-optional? [this])
-  (is-array? [this])
-  (is-leaf? [this])
-  (is-enum? [this]))
+  (is-array?    [this])
+  (is-leaf?     [this])
+  (is-enum?     [this]))
 
-(defn content->fields [content type]
+(defn- content->fields [content type]
   (let [content (filter #(not (string/starts-with? % "\n")) content)]
     (loop [el (first content) els (rest content) comments [] fields []]
       (if-not el
@@ -68,7 +122,7 @@
         (cond
           (string? el)
           {:__value nil
-           :__type type}
+           :__type  type}
 
           (instance? clojure.data.xml.node.Comment el)
           (recur (first els) (rest els) (conj comments (:content el)) fields)
@@ -76,14 +130,21 @@
           :otherwise
           (recur (first els) (rest els) [] (conj fields (node->element el comments nil))))))))
 
-(defn node->element [{:keys [tag attrs content]
-                      :or {content '()
-                           attrs {}}}
+(defn- string->stream
+  ([s] (string->stream s "UTF-8"))
+  ([s encoding]
+   (-> s
+       (.getBytes encoding)
+       (java.io.ByteArrayInputStream.))))
+
+(defn- node->element [{:keys [tag attrs content]
+                       :or   {content '()
+                              attrs   {}}}
                      comments
                      original-xml]
   (let [{:keys [type min-occurs max-occurs
                 optional enumeration]} (into {} (map parse-comment comments))
-        fields (content->fields content type)]
+        fields                         (content->fields content type)]
     (reify
       Element
       (get-original [_] original-xml)
@@ -106,16 +167,16 @@
       (get-paths [this] (get-paths this identity []))
       (get-paths [this fix-fn] (get-paths this fix-fn []))
       (get-paths [this fix-fn path]
-        (let [fields (get-fields this)
-              this-path (apply (partial conj path) (get-path this fix-fn))
+        (let [fields         (get-fields this)
+              this-path      (apply (partial conj path) (get-path this fix-fn))
               paths-to-attrs (map (fn [[attr-name attr-value]]
                                     (when (= attr-value "?")
-                                      {:path (conj this-path :__attrs (fix-fn attr-name))}))
+                                      {:path (conj this-path :__attrs (fix-fn attr-name) :__value)}))
                                   (get-attrs this))]
           (filter identity
                   (concat paths-to-attrs
                           (if (is-leaf? this)
-                            [{:path this-path}]
+                            [{:path (conj this-path :__value)}]
                             (flatten
                              (if-not (map? fields)
                                (map (fn [c]
@@ -127,23 +188,24 @@
         (let [m ((if (is-array? this)
                    vector
                    identity)
-                 {(fix-fn tag) (merge (if-let [attrs (not-empty
-                                                      (->> attrs
-                                                          (filter (fn [[_ attrv]]
-                                                                    (= "?" attrv)))
-                                                          (map (fn [[attr-name _]]
-                                                                 [(fix-fn attr-name) {:__value nil
-                                                                                      :__type "string"}]))
-                                                          (into {})))]
-                                        {:__attrs attrs}
-                                        {})
-                                      (apply merge
-                                             (-> this
-                                                 (get-fields)
-                                                 (->> (map (fn [c]
-                                                            (if (satisfies? Element c)
-                                                              (->mapping c fix-fn)
-                                                              (into {} [c]))))))))})]
+                 {(fix-fn tag)
+                  (merge (if-let [attrs (not-empty
+                                         (->> attrs
+                                             (filter (fn [[_ attrv]]
+                                                       (= "?" attrv)))
+                                             (map (fn [[attr-name _]]
+                                                    [(fix-fn attr-name) {:__value nil
+                                                                         :__type  "string"}]))
+                                             (into {})))]
+                           {:__attrs attrs}
+                           {})
+                         (apply merge
+                                (-> this
+                                    (get-fields)
+                                    (->> (map (fn [c]
+                                               (if (satisfies? Element c)
+                                                 (->mapping c fix-fn)
+                                                 (into {} [c]))))))))})]
           (if (vector? m)
             {(-> tag fix-fn plural) m}
             m)))
@@ -192,7 +254,12 @@
              (when (is-optional? this)
                (data-xml/cdata "{% endif %}"))])))
 
-      (->parse-fn [_])
+      (->parse-fn [this]
+        (fn [xml]
+          (let [xml (-> xml string->stream xml/parse zip/xml-zip)]
+            (apply deep-merge-with custom-merge
+                   (map (partial xml->map xml)
+                        (get-paths this))))))
 
       (is-optional? [_] (or optional (= min-occurs 0)))
 
@@ -210,62 +277,3 @@
                    :include-node? #{:element :characters :comment})
    []
    msg))
-
-
-(comment
-
-  (def x "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"
-                               xmlns:book=\"http://www.cleverbuilder.com/BookService/\">
-                 <soapenv:Header/>
-                     <soapenv:Body>
-                         <book:GetSomeBooks>
-                             <!--1 or more repetitions:-->
-                             <BookId BookType=\"?\">
-                                 <!--type: string-->
-                                 <ID>?</ID>
-                                 <Type>
-                                     <!--type: integer-->
-                                     <SubType>?</SubType>
-                                 </Type>
-                             </BookId>
-                             <!--type: string-->
-                             <RequestId>?</RequestId>
-                             <!--1 or more repetitions:-->
-                             <!--type: string-->
-                             <ArrayId x=\"?\" y=\"?\">?</ArrayId>
-                         </book:GetSomeBooks>
-                     </soapenv:Body>
-                 </soapenv:Envelope>")
-
-  (def y (xml->element x))
-
-  (is-array? y)
-  (is-optional? y)
-  (is-leaf? y)
-
-
-
-  (check y)
-
-  (clojure.pprint/pprint
-   (->mapping y))
-
-  (println (data-xml/indent-str (->template y true)))
-
-  (clojure.pprint/pprint
-   (get-paths y tag-fix)
-   )
-
-  (get-original y)
-
-  )
-
-(defn check [c]
-  (if (satisfies? Element c)
-    [(is-array? c)
-     (is-leaf? c)
-     (is-optional? c)
-     (get-tag c)
-     (get-path c)
-     (when-let [cs (get-fields c)]
-       (map check cs))]))
