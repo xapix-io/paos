@@ -65,14 +65,14 @@ Require `paos.wsdl` namespace:
 
     (require '[paos.wsdl :as wsdl])
 
-And process WSDL using function `wsdl/parse`
+And process WSDL using function `wsdl/parse` 
 
     ;; You can use external urls
     (def soap-service (wsdl/parse "http://example.com/some/wsdl/file?wsdl"))
-
+    
     ;; Or absolute file path
     (def soap-service (wsdl/parse "/some/place/service.wsdl"))
-
+    
     ;; Or just pass the content of WSDL file as a string
     (def soap-service (wsdl/parse "<SomeServise>"))
 
@@ -83,4 +83,108 @@ All service bindings should be visible as a top-level keywords with all operatio
                         "AnotherServiceBinding" {"operation3" ...
                                                  "operation4" ...}}
 
-Each operation is an object with implemented paos.service/Service methods
+Each operation is an object with implemented paos.service/Service methods which you can use to get data necessary for that service:
+
+    (require '[paos.service :as service])
+    
+    (let [srv (get-in soap-service ["SomeServiceBinding" "operation1"]]
+      (service/request-mapping srv)) 
+    ;; => {"Envelope" {"Headers" []
+                       "Body" {"SomeWrapper" {"Value" {:__value nil
+                                                       :__type "string"}}}}}
+
+`service/request-mapping` should give you an example how request should look like to be converted into payload xml. Places where you have to add some real values marked as `{:__value nil}` with data type expected by service `{:__type "string"}`
+
+Some data types can have arrays of complex objects:
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="msgBody">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" ref="Contato"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="Contato">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="cdEndereco"/>
+            <xs:element ref="cdBairro"/>
+            <xs:element ref="email"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="cdEndereco" type="xs:integer"/>
+      <xs:element name="cdBairro" type="xs:integer"/>
+      <xs:element name="email" type="xs:string"/>
+    </xs:schema>
+
+This type definition should be converted into that clojure data structure:
+
+    {"msgBody"
+     {"Contatos" 
+      [{"Contato"
+        {"cdEndereco"
+         {:__value nil
+          :__type "string"}
+         "cdBairro"
+         {:__value nil
+          :__type "string"}
+         "email"
+         {:__value nil
+          :__type "integer"}}}]}
+
+Here in `"msgBody"` you can find `"Contatos"` keyword with array of one element. That means that payload's `"msgBody"` might contain zero or more occurrences of `"Contato"` object. Just attach as much as you want into it and all of them will be injected correctly into request payload.
+
+To build actual xml payload you have to use `wrap-body` function from service namespace:
+
+    (require '[paos.service :as service])
+    
+    (let [srv (get-in soap-service ["SomeServiceBinding" "operation1"]
+          mapping (service/request-mapping srv)
+          context (do-something-with-mapping mapping)]
+      (service/wrap-body srv context))
+    ;; => "<xml>...</xml>"
+
+The result is just a string with all your data inside.
+
+Now you can use you favorite http library to make request to that service:
+
+    (require '[clj-http.client :as client])
+    (require '[paos.service :as service])
+    
+    (let [soap-url (:url soap-service)
+          srv (get-in soap-service ["SomeServiceBinding" "operation1"]
+          soap-action (service/soap-action srv)
+          mapping (service/request-mapping srv)
+          context (do-something-with-mapping mapping)
+          body (service/wrap-body srv context)]
+      (client/post soap-url {:content-type "text/plain"
+                             :body body
+                             :headers {"SoapAction" soap-action}}))
+    ;; => {:status 200
+           :body "<xml>...</xml>"
+           ...} 
+
+To convert xml from response you can use parse function from youк service:
+
+    (require '[clj-http.client :as client])
+    (require '[paos.service :as service])
+    
+    (let [soap-url (:url soap-service)
+          srv (get-in soap-service ["SomeServiceBinding" "operation1"]
+          soap-action (service/soap-action srv)
+          mapping (service/request-mapping srv)
+          context (do-something-with-mapping mapping)
+          body (service/wrap-body srv context)]
+      (-> (client/post soap-url {:content-type "text/plain"
+                                :body body
+                                :headers {"SoapAction" soap-action}})
+          :body
+          #(service/parse-response srv %)))
+    ;; => Result should be in the same form as mapping
+    ;;    You also can get an example of expected output:
+    
+    (let [srv (get-in soap-service ["SomeServiceBinding" "operation1"]]
+      (service/response-mapping srv))

@@ -4,7 +4,8 @@
             [inflections.core :refer [plural]]
             [clojure.data.zip.xml :as data-zip-xml]
             [clojure.xml :as xml]
-            [clojure.zip :as zip]))
+            [clojure.zip :as zip]
+            [selmer.parser :as selmer]))
 
 (declare node->element)
 
@@ -115,13 +116,15 @@
   (is-enum?     [this]))
 
 (defprotocol Service
-  (get-soap-action       [this])
-  (get-request-xml       [this])
-  (get-request-mapping   [this])
-  (get-request-template  [this])
-  (get-response-xml      [this])
-  (get-response-mapping  [this])
-  (get-response-template [this]))
+  (soap-action       [this])
+  (request-xml       [this])
+  (request-mapping   [this])
+  (request-template  [this])
+  (wrap-body         [this context])
+  (response-xml      [this])
+  (response-mapping  [this])
+  (response-template [this])
+  (parse-response    [this response-xml]))
 
 (defn- content->fields [content type]
   (let [content (filter #(not (string/starts-with? % "\n")) content)]
@@ -292,10 +295,19 @@
         response-element (xml->element response-msg)]
     (reify
       Service
-      (get-soap-action       [_] soap-action)
-      (get-request-xml       [_] (get-original request-element))
-      (get-request-mapping   [_] (->mapping request-element))
-      (get-request-template  [_] (->template request-element))
-      (get-response-xml      [_] (get-original response-element))
-      (get-response-mapping  [_] (->mapping response-element))
-      (get-response-template [_] (->template response-element)))))
+      (soap-action       [_] soap-action)
+      (request-xml       [_] (get-original request-element))
+      (request-mapping   [_] (->mapping request-element))
+      (request-template  [_] (->template request-element))
+
+      (wrap-body         [this context]
+        (let [template (request-template this)]
+          (selmer/render template context)))
+
+      (response-xml      [_] (get-original response-element))
+      (response-mapping  [_] (->mapping response-element))
+      (response-template [_] (->template response-element))
+
+      (parse-response    [this response-xml]
+        (let [parse-fn (->parse-fn response-element)]
+          (parse-fn response-xml))))))
