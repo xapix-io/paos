@@ -1,4 +1,4 @@
-(ns paos.wsdl-parser
+(ns paos.wsdl
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
             [paos.sample-message :as sample-message])
@@ -44,7 +44,7 @@
                                            (.getOperations binding-builder)))
                     :url (first (.getServiceUrls binding-builder))}])))
 
-(defn parse-wsdl [wsdl-path]
+(defn parse [wsdl-path]
   (let [wsdl (-> wsdl-path
                  make-wsdl-url
                  make-wsdl)
