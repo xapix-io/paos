@@ -1,0 +1,43 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:book="http://www.cleverbuilder.com/BookService/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <book:SimpleObjectWithComplexTag>
+            <Field1>?</Field1>
+            <Field2>?</Field2>
+        </book:SimpleObjectWithComplexTag>
+        <book:ArrayOneOrMoreRepetition>
+            <!--1 or more repetitions:-->
+            <!--type: string-->
+            <ArrayField>?</ArrayField>
+        </book:ArrayOneOrMoreRepetition>
+        <book:ArrayZeroOrMoreRepetition>
+            <!--Zero or more repetitions:-->
+            <!--type: integer-->
+            <ArrayField>?</ArrayField>
+        </book:ArrayZeroOrMoreRepetition>
+        <book:ArrayWithNestedArray>
+            <!--Zero or more repetitions:-->
+            <ArrayField>
+                <!--Zero or more repetitions:-->
+                <NestedArray>?</NestedArray>
+            </ArrayField>
+        </book:ArrayWithNestedArray>
+        <book:ComplexObjectWithComplexTag>
+            <!--1 or more repetitions:-->
+            <BookId BookType="?">
+                <!--type: string-->
+                <ID>?</ID>
+                <Type>
+                    <!--type: integer-->
+                    <SubType>?</SubType>
+                </Type>
+            </BookId>
+            <!--type: string-->
+            <RequestId>?</RequestId>
+            <!--1 or more repetitions:-->
+            <!--type: string-->
+            <ArrayId x="?" y="?">?</ArrayId>
+        </book:ComplexObjectWithComplexTag>
+    </soapenv:Body>
+</soapenv:Envelope>

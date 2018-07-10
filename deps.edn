@@ -3,7 +3,8 @@
         org.clojure/data.zip     {:mvn/version "0.1.2"}
         org.reficio/soap-builder {:mvn/version "1.0.0-SNAPSHOT"}
         selmer                   {:mvn/version "1.11.8"}
-        cheshire                 {:mvn/version "5.8.0"}}
+        cheshire                 {:mvn/version "5.8.0"}
+        inflections              {:mvn/version "0.13.0"}}
 
  :mvn/repos {"reficio"  {:url "http://repo.reficio.org/maven/"}
              "soapui"   {:url "http://www.soapui.org/repository/maven2"}

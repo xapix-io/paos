@@ -11,7 +11,9 @@
                 <active>?</active>
                 <dateFrom>?</dateFrom>
                 <dateTo>?</dateTo>
-                <category>?</category>
+                <category bar="?">
+                    <foo>?</foo>
+                </category>
             </return>
             <return>
                 <fs>?</fs>
@@ -22,7 +24,9 @@
                 <active>?</active>
                 <dateFrom>?</dateFrom>
                 <dateTo>?</dateTo>
-                <category>?</category>
+                <category>
+                    <foo>?</foo>
+                </category>
             </return>
             <return>
                 <fs>?</fs>
@@ -33,7 +37,9 @@
                 <active>?</active>
                 <dateFrom>?</dateFrom>
                 <dateTo>?</dateTo>
-                <category>?</category>
+                <category>
+                    <foo>?</foo>
+                </category>
             </return>
         </v1:airlineByIcaoResponse>
     </soapenv:Body>

@@ -1,79 +1,9 @@
 (ns paos.wsdl-parser
-  (:require [clojure.data.xml :as xml]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
             [clojure.string :as string]
-            [paos.template :as template]
-            [paos.mapping :as mapping])
+            [paos.sample-message :as sample-message])
   (:import [org.reficio.ws.builder.core SoapOperationImpl Wsdl]
            org.reficio.ws.SoapContext))
-
-(defn parse-comment [{:keys [content]}]
-  (cond
-    (string/starts-with? content "Optional:")
-    {:optional true}
-
-    (re-matches #"type: ([a-zA-Z]+)$" content)
-    {:type (string/trim (second (re-matches #"type: ([a-zA-Z]+)$" content)))}
-
-    (string/starts-with? content "Zero or more repetitions:")
-    {:min-occurs 0}
-
-    (re-matches #"([\d]+) or more repetitions:" content)
-    {:min-occurs (Integer/parseInt
-                  (last (re-matches #"([\d]+) or more repetitions:" content)))}
-
-    (re-matches #"([\d]+) to ([\d]+) repetitions:" content)
-    (let [[_ min max] (re-matches #"([\d]+) to ([\d]+) repetitions:" content)]
-      {:min-occurs (Integer/parseInt min)
-       :max-occurs (Integer/parseInt max)})
-
-    (re-matches #"(type: ([a-zA-Z]+)|anonymous type) - enumeration: \[(.*)\]" content)
-    (let [matcher (re-matches #"(type: ([a-zA-Z]+)|anonymous type) - enumeration: \[(.*)\]" content)
-          enumeration (mapv string/trim
-                             (string/split (nth matcher 3)
-                                          #","))
-          type (string/trim (or (nth matcher 2) "anonymous type"))]
-      {:enumeration enumeration
-       :type type})
-
-    :otherwise
-    nil))
-
-(defn xml->map*
-  ([xml]
-   (xml->map* xml {}))
-  ([{:keys [tag attrs content] :or {content '()
-                                    attrs {}}}
-    comments]
-   (let [content (if (string? content) (cons '() content) content)
-         content (filter #(not (string/starts-with? % "\n")) content)]
-     (merge {(or tag :comment)
-             (when-not (= content '("?"))
-               (cond
-                 (empty? content) {}
-                 (string? content) content
-                 :otherwise (loop [acc {} comment-acc {} content content]
-                              (if (empty? content)
-                                acc
-                                (let [item (first content)
-                                      items (rest content)]
-                                  (cond
-                                    (nil? (:tag item))
-                                    (recur acc (merge comment-acc (parse-comment item)) items)
-
-                                    :otherwise
-                                    (recur (merge acc (xml->map* item comment-acc)) {} items)))))))}
-            (into {}
-                  (map (fn [[k v]]
-                         [(keyword (namespace tag) (str (name tag) "[attr=" k "]"))
-                          (when-not (= v "?")
-                            v)])
-                       attrs))
-            (into {}
-                  (map (fn [[k v]]
-                         [(keyword (namespace tag) (str (name tag) "[comment=" (name k) "]"))
-                          v])
-                       comments))))))
 
 (defn ^SoapContext make-wsdl-context []
   (.build (doto (SoapContext/builder)
@@ -89,28 +19,20 @@
 (defn ^Wsdl make-wsdl [wsdl-url]
   (Wsdl/parse wsdl-url))
 
-(defn xml->map [msg]
-  (xml->map*
-   (xml/parse (java.io.StringReader. msg)
-              :namespace-aware false
-              :include-node? #{:element :characters :comment})))
-
 (defn make-operation [^SoapContext ctx binding-builder ^SoapOperationImpl operation]
-  (let [operation-name (.getOperationName operation)
-        soap-action (.getSoapAction operation)
-        input-template (.buildInputMessage operation ctx)
+  (let [operation-name  (.getOperationName operation)
+        soap-action     (.getSoapAction operation)
+        input-template  (.buildInputMessage operation ctx)
         output-template (.buildOutputMessage operation ctx)
-        input (xml->map input-template)
-        output (xml->map output-template)]
-    [operation-name {:soap-action soap-action
-                     :input-template (template/build-template input)
-                     :input-xml input-template
-                     :input (xml->map input-template)
-                     :input-mapping (mapping/build-mapping input template/sanitize-tag)
-                     :output-template (template/build-template output)
-                     :output-xml output-template
-                     :output (xml->map output-template)
-                     :output-mapping (mapping/build-mapping output identity)}]))
+        input-element   (sample-message/xml->element input-template)
+        output-element  (sample-message/xml->element output-template)]
+    [operation-name {:soap-action     soap-action
+                     :input-template  (sample-message/->template input-element)
+                     :input-xml       (sample-message/get-original input-element)
+                     :input-mapping   (sample-message/->mapping input-element)
+                     :output-template (sample-message/->template output-element)
+                     :output-xml      (sample-message/get-original output-element)
+                     :output-mapping  (sample-message/->mapping output-element)}]))
 
 (defn make-binding
   ([^Wsdl wsdl ^String binding-name]
@@ -136,8 +58,48 @@
 
 (comment
 
+  ((paos.response-parser/parser
+    (mapping/build-mapping
+     (xml->map "<foo x=\"?\">
+                  <!--Zero or more repetitions:-->
+                  <bar y=\"?\">
+                    <baz>?</baz>
+                  </bar>
+                </foo>")
+     identity) )
+   "<foo x=\"1\">
+      <bar y=\"2\">
+        <baz>4</baz>
+      </bar>
+      <bar y=\"3\">
+        <baz>6</baz>
+      </bar>
+      <bar y=\"5\">
+        <baz>8</baz>
+      </bar>
+      <bar y=\"3\">
+        <baz>6</baz>
+      </bar>
+      <bar y=\"8\">
+        <baz>619</baz>
+      </bar>
+      <bar y=\"12\">
+        <baz>4312</baz>
+      </bar>
+    </foo>")
+
+  (paos.response-parser/get-all-paths (mapping/build-mapping
+                                       (xml->map "<foo x=\"?\">
+                  <!--Zero or more repetitions:-->
+                  <bar y=\"?\">
+                    <baz>?</baz>
+                  </bar>
+                </foo>")
+                                       identity)
+                                      )
+
   (def x
-    (parse-wsdl "/Users/delaguardo/Projects/xapix/soap-clj/resources/airlinesService.xml")
+    (parse-wsdl "/Users/delaguardo/Projects/xapix/soap-clj/resources/bookStore.wsdl")
     ;; (parse-wsdl "/Users/delaguardo/Downloads/Xapix/Account_Address.wsdl")
     ;; (parse-wsdl "/tmp/foo.wsdl")
     )
@@ -145,7 +107,8 @@
   (clojure.pprint/pprint x)
   (keys (get-in x ["SoftLayer_Account_Regional_Registry_Detail_Property_TypeBinding" :operations "getAllObjects"]))
 
-  (clojure.pprint/pprint (-> x first second :operations first second :input-mapping))
+  (clojure.pprint/pprint (mapping/build-mapping (assoc-in (-> x first second :operations first second :output)
+                                                          [:soapenv:Envelope :soapenv:Body :v1:airlineByIcaoResponse (keyword "return[attr=:foo]")] nil) identity))
 
   (def root
     (-> "/Users/delaguardo/Projects/xapix/soap-clj/sample.xml"
