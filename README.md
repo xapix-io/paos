@@ -1,7 +1,5 @@
 # PAOS
 
----
-
 > Lightweight and easy-to-use library to build SOAP clients from WSDL files.
 
 # Intro
@@ -15,7 +13,7 @@ The main goal for PAOS is to provide developers with a flexible and easy-to-use 
 # When should you use PAOS?
 
 - Your project works with dynamically changing services
-- Your project need to be able to establish communication with new service on the fly
+- Your project needs to be able to establish communication with new services on the fly
 - You do not want to dive into the abyss of Java interop with often suboptimally generated classes
 - You need to somehow customize the messages sent to the service
 
@@ -25,7 +23,7 @@ All that [soap-ws](https://github.com/reficio/soap-ws) supports. If not – plea
 
 # Installation
 
-Because soap-ws depends on a list of external dependencies that are not published in clojars or maven, you need to add them to your project's repository list yourself.
+Because soap-ws depends on a list of external dependencies that are not published in clojars or maven, you need to add them to the project's repository list yourself.
 
 ## leiningen
 
@@ -61,11 +59,11 @@ Because soap-ws depends on a list of external dependencies that are not publishe
 
 # Quick start guide
 
-Require `paos.wsdl` namespace:
+Require the `paos.wsdl` namespace:
 
     (require '[paos.wsdl :as wsdl])
 
-And process your WSDL using function `wsdl/parse` 
+And process your WSDL using the function `wsdl/parse`
 
     ;; You can use external urls
     (def soap-service (wsdl/parse "http://example.com/some/wsdl/file?wsdl"))
@@ -83,7 +81,7 @@ All service bindings should be visible as top-level keywords with all operations
                         "AnotherServiceBinding" {"operation3" ...
                                                  "operation4" ...}}
 
-Each operation is an object implemented with paos.service/Service methods which you can use to get the data necessary for that service:
+Each operation is an object with implemented with paos.service/Service methods which you can use to get the data necessary for that service:
 
     (require '[paos.service :as service])
     
@@ -93,7 +91,7 @@ Each operation is an object implemented with paos.service/Service methods which 
                        "Body" {"SomeWrapper" {"Value" {:__value nil
                                                        :__type "string"}}}}}
 
-`service/request-mapping` should give you an example how a request should look to be converted into payload xml. Places where you have to add some real values are marked as `{:__value nil}` with data type expected by service `{:__type "string"}`
+`service/request-mapping` should give you an example how a request should look like to be converted into payload xml. Places where you have to add some real values are marked as `{:__value nil}` with the data type expected by the service in `{:__type "string"}`
 
 Some data types can have arrays of complex objects:
 
@@ -120,7 +118,7 @@ Some data types can have arrays of complex objects:
       <xs:element name="email" type="xs:string"/>
     </xs:schema>
 
-This type definition should be converted into clojure data structures like the one shown below:
+This type definition should be converted into a Clojure data structure like the following:
 
     {"msgBody"
      {"Contatos" 
@@ -135,9 +133,9 @@ This type definition should be converted into clojure data structures like the o
          {:__value nil
           :__type "integer"}}}]}
 
-Here in `"msgBody"` you can find the `"Contatos"` keyword with an array of one element. That means that payload's `"msgBody"` might contain zero or more occurrences of the `"Contato"` object. It can contain an arbitrary number of objects, and all of them will be injected correctly into the request payload.
+Here in `"msgBody"` you can find the `"Contatos"` keyword with an array of one element. That means that the payload's `"msgBody"` might contain zero or more occurrences of `"Contato"` object. Just attach as many as you want into it and all of them will be injected correctly into the request payload.
 
-To build an actual xml payload you have to use the `wrap-body` function from the service namespace:
+To build the actual XML payload you have to use `wrap-body` function from the service namespace:
 
     (require '[paos.service :as service])
     
@@ -149,7 +147,7 @@ To build an actual xml payload you have to use the `wrap-body` function from the
 
 The result is just a string with all your data inside.
 
-Now you can use your favorite http library to make requests to that service:
+Now you can use your favorite http library to make the request to the service:
 
     (require '[clj-http.client :as client])
     (require '[paos.service :as service])
@@ -167,7 +165,7 @@ Now you can use your favorite http library to make requests to that service:
            :body "<xml>...</xml>"
            ...} 
 
-To convert xml from your response you can use parse function from your service:
+To convert the XML from the response you can use parse function from your service:
 
     (require '[clj-http.client :as client])
     (require '[paos.service :as service])
@@ -188,3 +186,10 @@ To convert xml from your response you can use parse function from your service:
     
     (let [srv (get-in soap-service ["SomeServiceBinding" "operation1"]]
       (service/response-mapping srv))
+
+# Copyright and License
+
+Copyright © 2018 [Xapix GmbH](https://www.xapix.io/), and contributors
+
+Distributed under the Eclipse Public License, the same as Clojure.
+
