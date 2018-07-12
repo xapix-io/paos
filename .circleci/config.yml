@@ -93,7 +93,7 @@ jobs:
           name: Build and deploy to clojars
           type: shell
           command: |
-            mvn -s .m2/settings.xml clean package
+            mvn -s .m2/settings.xml deploy
 
       - save_cache:
           paths:
