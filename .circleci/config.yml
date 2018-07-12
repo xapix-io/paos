@@ -23,7 +23,7 @@ jobs:
           key: v1-repo-{{ .Branch }}-{{ .Revision }}
 
       - restore_cache:
-          key: 1.8-{{ checksum "deps.edn" }}-{{ .Branch }}-{{ .Revision }}
+          key: 1.8-{{ checksum "deps.edn" }}
 
       - run:
           name: Test with clojure 1.8
@@ -34,7 +34,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: 1.8-{{ checksum "deps.edn" }}-{{ .Branch }}-{{ .Revision }}
+          key: 1.8-{{ checksum "deps.edn" }}
 
   test-1.9:
     <<: *defaults
@@ -44,7 +44,7 @@ jobs:
           key: v1-repo-{{ .Branch }}-{{ .Revision }}
 
       - restore_cache:
-          key: 1.9-{{ checksum "deps.edn" }}-{{ .Branch }}-{{ .Revision }}
+          key: 1.9-{{ checksum "deps.edn" }}
 
       - run:
           name: Test with clojure 1.9
@@ -55,7 +55,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: 1.9-{{ checksum "deps.edn" }}-{{ .Branch }}-{{ .Revision }}
+          key: 1.9-{{ checksum "deps.edn" }}
 
   test-1.10:
     <<: *defaults
@@ -65,7 +65,7 @@ jobs:
           key: v1-repo-{{ .Branch }}-{{ .Revision }}
 
       - restore_cache:
-          key: 1.10-{{ checksum "deps.edn" }}-{{ .Branch }}-{{ .Revision }}
+          key: 1.10-{{ checksum "deps.edn" }}
 
       - run:
           name: Test with clojure 1.10-master
@@ -76,7 +76,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: 1.10-{{ checksum "deps.edn" }}-{{ .Branch }}-{{ .Revision }}
+          key: 1.10-{{ checksum "deps.edn" }}
 
   deploy:
     <<: *defaults
@@ -87,7 +87,7 @@ jobs:
       - checkout
 
       - restore_cache:
-          key: maven-{{ .Branch }}-{{ .Revision }}
+          key: maven-{{ checksum "pom.xml" }}
 
       - run:
           name: Build and deploy to clojars
@@ -98,7 +98,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: maven-{{ .Branch }}-{{ .Revision }}
+          key: maven-{{ checksum "pom.xml" }}
 
 workflows:
   version: 2
