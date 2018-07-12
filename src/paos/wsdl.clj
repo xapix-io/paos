@@ -3,7 +3,9 @@
             [clojure.string :as string]
             [paos.service :as service])
   (:import [org.reficio.ws.builder.core SoapOperationImpl Wsdl]
-           org.reficio.ws.SoapContext))
+           [org.reficio.ws SoapBuilderException]
+           org.reficio.ws.SoapContext
+           [java.net MalformedURLException]))
 
 (defn ^SoapContext make-wsdl-context []
   (.build (doto (SoapContext/builder)
@@ -44,14 +46,55 @@
                                            (.getOperations binding-builder)))
                     :url (first (.getServiceUrls binding-builder))}])))
 
-(defn parse [wsdl-path]
-  (let [wsdl (-> wsdl-path
-                 make-wsdl-url
-                 make-wsdl)
+(defn file->wsdl [file-name]
+  (-> file-name
+      make-wsdl-url
+      make-wsdl))
+
+(defn net-url->wsdl [net-url]
+  (-> net-url
+      (java.net.URL.)
+      make-wsdl))
+
+(defn wsdl-content->wsdl [wsdl-content]
+  (let [file-name (java.io.File/createTempFile "service" ".wsdl")]
+    (with-open [file (clojure.java.io/writer file-name)]
+      (binding [*out* file]
+        (println wsdl-content)))
+    (-> file-name
+        make-wsdl-url
+        make-wsdl)))
+
+(defn ->wsdl [path-or-content]
+  (cond
+    (.exists (io/file path-or-content))
+    (file->wsdl path-or-content)
+
+    (try
+      (java.net.URL. path-or-content)
+      (catch MalformedURLException e
+        false))
+    (net-url->wsdl path-or-content)
+
+    :otherwise (wsdl-content->wsdl path-or-content)))
+
+(defn parse [wsdl]
+  (let [wsdl (->wsdl wsdl)
         ctx (make-wsdl-context)]
     (into {}
           (map (fn [binding]
-                 (make-binding wsdl
-                               (.getLocalPart binding)
-                               ctx))
+                 (try
+                   (make-binding wsdl
+                                 (.getLocalPart binding)
+                                 ctx)
+                   (catch SoapBuilderException e
+                     [(.getLocalPart binding) nil])))
                (.getBindings wsdl)))))
+
+(comment
+
+  (parse "http://www.xignite.com/xcurrencies.asmx?WSDL")
+  (parse (slurp "/Users/delaguardo/Downloads/xcurrencies.wsdl"))
+  (parse "/Users/delaguardo/Downloads/xcurrencies.wsdl")
+
+  )
