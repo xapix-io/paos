@@ -93,8 +93,24 @@
 
 (comment
 
-  (parse "http://www.xignite.com/xcurrencies.asmx?WSDL")
-  (parse (slurp "/Users/delaguardo/Downloads/xcurrencies.wsdl"))
-  (parse "/Users/delaguardo/Downloads/xcurrencies.wsdl")
+  (parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
+  (parse (slurp "/Users/delaguardo/Downloads/BLZService.wsdl"))
+  (parse "/Users/delaguardo/Downloads/BLZService.wsdl")
 
-  )
+  (require '[clj-http.client :as client])
+  (require '[paos.service :as service])
+
+  (let [soap-service (parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
+        srv          (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
+        soap-url     (get-in soap-service ["BLZServiceSOAP11Binding" :url])
+        soap-action  (service/soap-action srv)
+        mapping      (service/request-mapping srv)
+        context      (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
+        body         (service/wrap-body srv context)
+        parse-fn     (partial service/parse-response srv)]
+    (-> soap-url
+        (client/post {:content-type "text/xml"
+                      :body         body
+                      :headers      {"SOAPAction" soap-action}})
+        :body
+        parse-fn)))

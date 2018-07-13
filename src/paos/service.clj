@@ -2,6 +2,7 @@
   (:require [clojure.data.xml :as data-xml]
             [clojure.string :as string]
             [inflections.core :refer [plural]]
+            [clojure.data.zip :as data-zip]
             [clojure.data.zip.xml :as data-zip-xml]
             [clojure.xml :as xml]
             [clojure.zip :as zip]
@@ -47,6 +48,16 @@
     :otherwise
     nil))
 
+(defn tag-name= [tagname]
+  (fn [loc]
+    (or (= (name tagname) (name (:tag (zip/node loc))))
+        (filter #(and (zip/branch? %) (= (name tagname) (name (:tag (zip/node %)))))
+                (data-zip/children-auto loc)))))
+
+(defn path->predicates [path]
+  (map #(tag-name= (tag-fix %))
+       path))
+
 (defn- xml->map [root {:keys [path]}]
   (loop [fp (first path) rp (rest path) path-to-update []]
     (case fp
@@ -55,21 +66,21 @@
                          (mapv #(xml->map % {:path (rest rp)})
                                (apply data-zip-xml/xml->
                                       root
-                                      (conj path-to-update (first rp)))))
+                                      (path->predicates (conj path-to-update (first rp))))))
       :__attrs (assoc-in {}
                          (map tag-fix (conj path-to-update :__attrs (first rp) :__value))
                          (data-zip-xml/attr (if (not-empty path-to-update)
                                               (apply data-zip-xml/xml1->
                                                      root
-                                                     path-to-update)
+                                                     (path->predicates path-to-update))
                                               root)
                                             (first rp)))
       :__value (assoc-in {}
                          (map tag-fix (conj path-to-update :__value))
-                         (data-zip-xml/text
-                          (apply data-zip-xml/xml1->
-                                 root
-                                 path-to-update)))
+                         (some->
+                          (apply (partial data-zip-xml/xml1-> root)
+                                 (path->predicates path-to-update))
+                          data-zip-xml/text))
       (recur (first rp) (rest rp) (conj path-to-update fp)))))
 
 (defn- deep-merge
@@ -226,9 +237,10 @@
         (data-xml/indent-str
          (->template this true)))
       (->template [this root?]
-        (let [tag (tag-fix (get-tag this))]
+        (let [origin-tag (get-tag this)
+              tag (tag-fix (get-tag this))]
           (if root?
-            (data-xml/element tag
+            (data-xml/element origin-tag
                               attrs
                               (conj (into [(data-xml/cdata (str "{% with ctx=" tag " %}"))]
                                           (map (fn [c]
@@ -245,7 +257,7 @@
                                                      (str "item." tag)
                                                      (str "ctx." tag))
                                     " %}")))
-             (data-xml/element tag
+             (data-xml/element origin-tag
                                (->> attrs
                                    (map (fn [[attr-name attr-value]]
                                           [attr-name (if (= attr-value "?")
@@ -268,7 +280,7 @@
 
       (->parse-fn [this]
         (fn [xml]
-          (let [xml (-> xml string->stream xml/parse zip/xml-zip)]
+          (let [xml (-> xml string->stream (data-xml/parse :namespace-aware true) zip/xml-zip)]
             (apply deep-merge-with custom-merge
                    (map (partial xml->map xml)
                         (get-paths this))))))
@@ -305,7 +317,7 @@
           (selmer/render template context)))
 
       (response-xml      [_] (get-original response-element))
-      (response-mapping  [_] (->mapping response-element))
+      (response-mapping  [_] (->mapping response-element identity))
       (response-template [_] (->template response-element))
 
       (parse-response    [this response-xml]
