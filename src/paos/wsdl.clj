@@ -1,7 +1,8 @@
 (ns paos.wsdl
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
-            [paos.service :as service])
+            [paos.service :as service]
+            [paos.wsdl :as wsdl])
   (:import [org.reficio.ws.builder.core SoapOperationImpl Wsdl]
            [org.reficio.ws SoapBuilderException]
            org.reficio.ws.SoapContext
@@ -99,8 +100,9 @@
 
   (require '[clj-http.client :as client])
   (require '[paos.service :as service])
+  (require '[paos.wsdl :as wsdl])
 
-  (let [soap-service (parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
+  (let [soap-service (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
         srv          (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
         soap-url     (get-in soap-service ["BLZServiceSOAP11Binding" :url])
         soap-action  (service/soap-action srv)

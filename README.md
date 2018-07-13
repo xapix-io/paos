@@ -63,8 +63,9 @@ Because soap-ws depends on a list of external dependencies that are not publishe
 ;; clj-http not included, add it yourself
 (require '[clj-http.client :as client])
 (require '[paos.service :as service])
+(require '[paos.wsdl :as wsdl])
 
-(let [soap-service (parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
+(let [soap-service (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
       srv          (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
       soap-url     (get-in soap-service ["BLZServiceSOAP11Binding" :url])
       soap-action  (service/soap-action srv)
