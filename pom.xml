@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.xapix</groupId>
     <artifactId>paos</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2-SNAPSHOT</version>
     <name>paos</name>
     <dependencies>
         <dependency>
@@ -32,14 +32,14 @@
             <version>1.11.8</version>
         </dependency>
         <dependency>
-            <groupId>cheshire</groupId>
-            <artifactId>cheshire</artifactId>
-            <version>5.8.0</version>
-        </dependency>
-        <dependency>
             <groupId>inflections</groupId>
             <artifactId>inflections</artifactId>
             <version>0.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.clojure</groupId>
+            <artifactId>tools.cli</artifactId>
+            <version>0.3.5</version>
         </dependency>
     </dependencies>
     <build>
