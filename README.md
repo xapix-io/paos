@@ -57,6 +57,22 @@ Because soap-ws depends on a list of external dependencies that are not publishe
     ...
     }
 
+## Command line interface
+
+You can examine any WSDL with simple command line interface. If you already have all required repos in your deps.edn just execute `clj -Sdeps '{:deps {io.xapix/paos {:mvn/version "0.1.2-SNAPSHOT"}}}' -m paos.core -h` and check available options.
+
+Or you can use standalone script with everything inplace:
+
+```bash
+#!/usr/bin/env bash
+set -e
+
+MVN_REPOS='{"reficio" {:url "http://repo.reficio.org/maven/"} "soapui" {:url "http://www.soapui.org/repository/maven2"} "enonic" {:url "http://repo.enonic.com/public/"}}'
+DEPS='{io.xapix/paos {:mvn/version "0.1.2-SNAPSHOT"}}'
+
+clojure -Srepro -Sdeps "{:deps $DEPS :mvn/repos $MVN_REPOS}" -m paos.core $@
+```
+
 # TL;DR
 
 ```clojure
