@@ -26,7 +26,8 @@
         <book:ComplexObjectWithComplexTag>
             <!--1 or more repetitions:-->
             <BookId BookType="?">
-                <!--type: string-->
+                <!--type: string - enumeration: [FOO_ID,BAR_ID]-->
+                <!--Optional: true-->
                 <ID>?</ID>
                 <Type>
                     <!--type: integer-->
