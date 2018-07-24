@@ -322,9 +322,11 @@
           :soap12 {}))
 
       (content-type      [_]
-        (case soap-version
-          :soap   "text/xml"
-          :soap12 "application/soap+xml"))
+        (let [action-part-in-content-type (when-not (empty? soap-action)
+                                            (format "action=\"%s\"" soap-action))]
+          (case soap-version
+            :soap   "text/xml"
+            :soap12 (str "application/soap+xml;" action-part-in-content-type))))
 
       (request-xml       [_] (get-original request-element))
       (request-mapping   [_] (->mapping request-element))
