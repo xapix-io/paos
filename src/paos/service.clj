@@ -1,11 +1,10 @@
 (ns paos.service
   (:require [clojure.data.xml :as data-xml]
-            [clojure.string :as string]
-            [inflections.core :refer [plural]]
             [clojure.data.zip :as data-zip]
             [clojure.data.zip.xml :as data-zip-xml]
-            [clojure.xml :as xml]
+            [clojure.string :as string]
             [clojure.zip :as zip]
+            [inflections.core :refer [plural]]
             [selmer.parser :as selmer]))
 
 (declare node->element)

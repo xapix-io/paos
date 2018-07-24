@@ -1,12 +1,9 @@
 (ns paos.wsdl
   (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [paos.service :as service]
-            [paos.wsdl :as wsdl])
-  (:import [org.reficio.ws.builder.core SoapOperationImpl Wsdl]
-           [org.reficio.ws SoapBuilderException]
-           org.reficio.ws.SoapContext
-           [java.net MalformedURLException]))
+            [paos.service :as service])
+  (:import java.net.MalformedURLException
+           [org.reficio.ws SoapBuilderException SoapContext]
+           [org.reficio.ws.builder.core SoapOperationImpl Wsdl]))
 
 (defn ^SoapContext make-wsdl-context []
   (.build (doto (SoapContext/builder)
