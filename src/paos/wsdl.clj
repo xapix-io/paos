@@ -1,14 +1,11 @@
 (ns paos.wsdl
   (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [paos.service :as service]
-            [paos.wsdl :as wsdl])
-  (:import [org.reficio.ws.builder.core SoapOperationImpl Wsdl]
-           [org.reficio.ws SoapBuilderException]
-           org.reficio.ws.SoapContext
+            [paos.service :as service])
+  (:import java.net.MalformedURLException
            javax.wsdl.extensions.soap.SOAPBinding
            javax.wsdl.extensions.soap12.SOAP12Binding
-           [java.net MalformedURLException]))
+           [org.reficio.ws SoapBuilderException SoapContext]
+           [org.reficio.ws.builder.core SoapOperationImpl Wsdl]))
 
 (defn ^SoapContext make-wsdl-context []
   (.build (doto (SoapContext/builder)
@@ -115,22 +112,19 @@
   (require '[paos.service :as service])
   (require '[paos.wsdl :as wsdl])
 
-  (let [soap-service (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
-        srv          (get-in soap-service ["BLZServiceSOAP12Binding" :operations "getBank"])
-        soap-url     (get-in soap-service ["BLZServiceSOAP12Binding" :url])
-        soap-headers (service/soap-headers srv)
-        content-type (service/content-type srv)
-        mapping      (service/request-mapping srv)
-        context      (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
-        body         (service/wrap-body srv context)
-        parse-fn     (partial service/parse-response srv)]
+  (let [soap-service   (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
+        srv            (get-in soap-service ["BLZServiceSOAP12Binding" :operations "getBank"])
+        soap-url       (get-in soap-service ["BLZServiceSOAP12Binding" :url])
+        soap-headers   (service/soap-headers srv)
+        content-type   (service/content-type srv)
+        mapping        (service/request-mapping srv)
+        context        (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
+        body           (service/wrap-body srv context)
+        parse-fn       (partial service/parse-response srv)
+        parse-fault-fn (partial service/parse-fault srv)]
     (-> soap-url
         (client/post {:content-type content-type
                       :body         body
-                      :debug?       true
-                      :headers      (merge {} soap-headers)
-                      })
+                      :headers      (merge {} soap-headers)})
         :body
-        parse-fn))
-
-  )
+        parse-fn)))

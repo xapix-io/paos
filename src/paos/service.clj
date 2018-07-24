@@ -129,6 +129,7 @@
 (defprotocol Service
   (soap-headers      [this])
   (content-type      [this])
+  (soap-action       [this])
 
   (request-xml       [this])
   (request-mapping   [this])
@@ -316,13 +317,15 @@
         fault-element    (xml->element fault-msg)]
     (reify
       Service
-      (soap-headers      [_]
+      (soap-headers      [this]
         (case soap-version
-          :soap {"SOAPAction" soap-action}
+          :soap {"SOAPAction" (soap-action this)}
           :soap12 {}))
+      (soap-action       [_] soap-action)
 
-      (content-type      [_]
-        (let [action-part-in-content-type (when-not (empty? soap-action)
+      (content-type      [this]
+        (let [soap-action (soap-action this)
+              action-part-in-content-type (when-not (empty? soap-action)
                                             (format "action=\"%s\"" soap-action))]
           (case soap-version
             :soap   "text/xml"
