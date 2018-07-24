@@ -1,10 +1,10 @@
 (ns paos.service
   (:require [clojure.data.xml :as data-xml]
-            [clojure.string :as string]
-            [inflections.core :refer [plural]]
             [clojure.data.zip :as data-zip]
             [clojure.data.zip.xml :as data-zip-xml]
+            [clojure.string :as string]
             [clojure.zip :as zip]
+            [inflections.core :refer [plural]]
             [selmer.parser :as selmer])
   (:import clojure.data.xml.node.Comment))
 
@@ -173,8 +173,8 @@
 (defn- node->element [{:keys [tag attrs content]
                        :or   {content '()
                               attrs   {}}}
-                     comments
-                     original-xml]
+                      comments
+                      original-xml]
   (let [{:keys [type min-occurs max-occurs
                 optional enumeration]} (into {} (map parse-comment comments))
         fields                         (content->fields content type)]

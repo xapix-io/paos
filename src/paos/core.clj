@@ -1,9 +1,9 @@
 (ns paos.core
-  (:require [paos.wsdl :as wsdl]
-            [paos.service :as service]
+  (:gen-class)
+  (:require [clojure.pprint :as pprint]
             [clojure.tools.cli :refer [parse-opts]]
-            [clojure.pprint :as pprint])
-  (:gen-class))
+            [paos.service :as service]
+            [paos.wsdl :as wsdl]))
 
 (def cli-options
   [["-w" "--wsdl WSDL" "Url or filesystem path or a content of wsdl. (Required)"
