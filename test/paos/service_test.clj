@@ -104,8 +104,8 @@
                       {"BookIds"
                        [{"BookId"
                          {:__attrs {"BookType" {:__value nil :__type "string"}}
-                          "ID" {:__value nil :__type "string"}
-                          "Type" {"SubType" {:__value nil :__type "integer"}}}}]
+                          "ID"     {:__value nil :__type "string"}
+                          "Type"   {"SubType" {:__value nil :__type "integer"}}}}]
                        "RequestId" {:__value nil :__type "string"}
                        "ArrayIds"
                        [{"ArrayId"
@@ -113,12 +113,12 @@
                           {"x" {:__value nil :__type "string"}
                            "y" {:__value nil :__type "string"}}
                           :__value nil
-                          :__type "string"}}]}}}}
+                          :__type  "string"}}]}}}}
                    mapping))))
 
       (t/testing "->parse-fn return function able to parse xml strings according to the mapping attached to element"
 
-        (let [parse-fn (sut/->parse-fn element)
+        (let [parse-fn    (sut/->parse-fn element)
               parsed-data (parse-fn service-response)]
 
           (t/testing "data parsed"
@@ -131,34 +131,46 @@
                         {"Field1" {"__value" "123"} "Field2" {"__value" "asdj"}}
                         "ArrayOneOrMoreRepetition"
                         {"ArrayFields"
-                         [{"__value" "1"} {"__value" "2"} {"__value" "3"} {"__value" "4"}]}
+                         [{"ArrayField" {"__value" "1"}}
+                          {"ArrayField" {"__value" "2"}}
+                          {"ArrayField" {"__value" "3"}}
+                          {"ArrayField" {"__value" "4"}}]}
                         "ArrayZeroOrMoreRepetition"
                         {"ArrayFields"
-                         [{"__value" "123"}
-                          {"__value" "123"}
-                          {"__value" "123"}
-                          {"__value" "123"}
-                          {"__value" "123"}
-                          {"__value" "123"}
-                          {"__value" "123"}]}
+                         [{"ArrayField" {"__value" "123"}}
+                          {"ArrayField" {"__value" "123"}}
+                          {"ArrayField" {"__value" "123"}}
+                          {"ArrayField" {"__value" "123"}}
+                          {"ArrayField" {"__value" "123"}}
+                          {"ArrayField" {"__value" "123"}}
+                          {"ArrayField" {"__value" "123"}}]}
                         "ArrayWithNestedArray"
                         {"ArrayFields"
-                         [{"NestedArrays" [{"__value" "q"} {"__value" "w"} {"__value" "e"}]}
-                          {"NestedArrays" [{"__value" "r"}]}
-                          {"NestedArrays" [{"__value" "t"} {"__value" "y"}]}]}
+                         [{"ArrayField"
+                           {"NestedArrays"
+                            [{"NestedArray" {"__value" "q"}}
+                             {"NestedArray" {"__value" "w"}}
+                             {"NestedArray" {"__value" "e"}}]}}
+                          {"ArrayField"
+                           {"NestedArrays"
+                            [{"NestedArray" {"__value" "r"}}]}}
+                          {"ArrayField"
+                           {"NestedArrays"
+                            [{"NestedArray" {"__value" "t"}}
+                             {"NestedArray" {"__value" "y"}}]}}]}
                         "ComplexObjectWithComplexTag"
                         {"BookIds"
-                         [{"__attrs" {"BookType" {"__value" "ewq"}}
-                           "ID" {"__value" "0"}
-                           "Type" {"SubType" {"__value" ".1"}}}
-                          {"__attrs" {"BookType" {"__value" "qwe"}}
-                           "ID" {"__value" "1"}
-                           "Type" {"SubType" {"__value" ".2"}}}]
+                         [{"BookId" {"__attrs" {"BookType" {"__value" "ewq"}}
+                                     "ID"      {"__value" "0"}
+                                     "Type"    {"SubType" {"__value" ".1"}}}}
+                          {"BookId" {"__attrs" {"BookType" {"__value" "qwe"}}
+                                     "ID"      {"__value" "1"}
+                                     "Type"    {"SubType" {"__value" ".2"}}}}]
                          "RequestId" {"__value" "jshvjdshg"}
                          "ArrayIds"
-                         [{"__attrs" {"x" {"__value" "x1"} "y" {"__value" "y1"}}
-                           "__value" "1"}
-                          {"__attrs" {"x" {"__value" "x2"} "y" {"__value" "y2"}}
-                           "__value" "2"}
-                          {"__attrs" {"x" {"__value" "x3"} "y" {"__value" "y3"}}
-                           "__value" "3"}]}}}}))))))))
+                         [{"ArrayId" {"__attrs" {"x" {"__value" "x1"} "y" {"__value" "y1"}}
+                                      "__value" "1"}}
+                          {"ArrayId" {"__attrs" {"x" {"__value" "x2"} "y" {"__value" "y2"}}
+                                      "__value" "2"}}
+                          {"ArrayId" {"__attrs" {"x" {"__value" "x3"} "y" {"__value" "y3"}}
+                                      "__value" "3"}}]}}}}))))))))

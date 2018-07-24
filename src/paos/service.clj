@@ -63,7 +63,7 @@
     (case fp
       0        (assoc-in {}
                          (map tag-fix (conj path-to-update (-> rp first plural keyword)))
-                         (mapv #(xml->map % {:path (rest rp)})
+                         (mapv #(xml->map % {:path rp})
                                (apply data-zip-xml/xml->
                                       root
                                       (path->predicates (conj path-to-update (first rp))))))
