@@ -128,14 +128,21 @@
 
 (defprotocol Service
   (soap-action       [this])
+
   (request-xml       [this])
   (request-mapping   [this])
   (request-template  [this])
   (wrap-body         [this context])
+
   (response-xml      [this])
   (response-mapping  [this])
   (response-template [this])
-  (parse-response    [this response-xml]))
+  (parse-response    [this response-xml])
+
+  (fault-xml         [this])
+  (fault-mapping     [this])
+  (fault-template    [this])
+  (parse-fault       [this fault-xml]))
 
 (defn- content->fields [content type]
   (let [content (filter #(not (string/starts-with? % "\n")) content)]
@@ -302,12 +309,14 @@
    []
    msg))
 
-(defn ->service [soap-action request-msg response-msg]
+(defn ->service [soap-action request-msg response-msg fault-msg]
   (let [request-element  (xml->element request-msg)
-        response-element (xml->element response-msg)]
+        response-element (xml->element response-msg)
+        fault-element    (xml->element fault-msg)]
     (reify
       Service
       (soap-action       [_] soap-action)
+
       (request-xml       [_] (get-original request-element))
       (request-mapping   [_] (->mapping request-element))
       (request-template  [_] (->template request-element))
@@ -322,4 +331,12 @@
 
       (parse-response    [this response-xml]
         (let [parse-fn (->parse-fn response-element)]
-          (parse-fn response-xml))))))
+          (parse-fn response-xml)))
+
+      (fault-xml         [_] (get-original fault-element))
+      (fault-mapping     [_] (->mapping fault-element))
+      (fault-template    [_] (->template fault-element))
+
+      (parse-fault       [this fault-xml]
+        (let [parse-fn (->parse-fn fault-element)]
+          (parse-fn fault-xml))))))

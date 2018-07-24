@@ -6,6 +6,10 @@
   (:import [org.reficio.ws.builder.core SoapOperationImpl Wsdl]
            [org.reficio.ws SoapBuilderException]
            org.reficio.ws.SoapContext
+           javax.wsdl.extensions.soap.SOAPBinding
+           javax.wsdl.extensions.soap12.SOAP12Binding
+           ;; com.ibm.wsdl.extensions.soap.SOAPBindingImpl
+           ;; com.ibm.wsdl.extensions.soap12.SOAP12BindingImpl
            [java.net MalformedURLException]))
 
 (defn ^SoapContext make-wsdl-context []
@@ -22,20 +26,20 @@
 (defn ^Wsdl make-wsdl [wsdl-url]
   (Wsdl/parse wsdl-url))
 
+(defn soap-version [binding-builder]
+  (filter (fn [el]
+            (instance? SOAPBinding el))
+          (.getExtensibilityElements (.getBinding binding-builder))))
+
 (defn make-operation [^SoapContext ctx binding-builder ^SoapOperationImpl operation]
   (let [operation-name  (.getOperationName operation)
         soap-action     (.getSoapAction operation)
         input-template  (.buildInputMessage operation ctx)
         output-template (.buildOutputMessage operation ctx)
-        service         (service/->service soap-action input-template output-template)]
-    [operation-name service]
-    #_[operation-name {:soap-action     (service/get-soap-action service)
-                       :input-template  (service/get-request-template service)
-                       :input-xml       (service/get-request-xml service)
-                       :input-mapping   (service/get-request-mapping service)
-                       :output-template (service/get-response-template service)
-                       :output-xml      (service/get-response-xml service)
-                       :output-mapping  (service/get-response-mapping service)}]))
+        fault-template  (.buildEmptyFault operation ctx)
+        service         (service/->service soap-action input-template output-template fault-template)]
+    (soap-version binding-builder)
+    [operation-name service]))
 
 (defn make-binding
   ([^Wsdl wsdl ^String binding-name]
@@ -103,16 +107,20 @@
   (require '[paos.wsdl :as wsdl])
 
   (let [soap-service (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
-        srv          (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
-        soap-url     (get-in soap-service ["BLZServiceSOAP11Binding" :url])
+        srv          (get-in soap-service ["BLZServiceSOAP12Binding" :operations "getBank"])
+        soap-url     (get-in soap-service ["BLZServiceSOAP12Binding" :url])
         soap-action  (service/soap-action srv)
         mapping      (service/request-mapping srv)
         context      (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
         body         (service/wrap-body srv context)
         parse-fn     (partial service/parse-response srv)]
     (-> soap-url
-        (client/post {:content-type "text/xml"
+        (client/post {:content-type "application/soap+xml"
                       :body         body
-                      :headers      {"SOAPAction" soap-action}})
+                      :debug?       true
+                      ;; :headers      {"SOAPAction" soap-action}
+                      })
         :body
-        parse-fn)))
+        parse-fn))
+
+  )
