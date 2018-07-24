@@ -127,7 +127,8 @@
   (is-enum?     [this]))
 
 (defprotocol Service
-  (soap-action       [this])
+  (soap-headers      [this])
+  (content-type      [this])
 
   (request-xml       [this])
   (request-mapping   [this])
@@ -309,13 +310,21 @@
    []
    msg))
 
-(defn ->service [soap-action request-msg response-msg fault-msg]
+(defn ->service [soap-action soap-version request-msg response-msg fault-msg]
   (let [request-element  (xml->element request-msg)
         response-element (xml->element response-msg)
         fault-element    (xml->element fault-msg)]
     (reify
       Service
-      (soap-action       [_] soap-action)
+      (soap-headers      [_]
+        (case soap-version
+          :soap {"SOAPAction" soap-action}
+          :soap12 {}))
+
+      (content-type      [_]
+        (case soap-version
+          :soap   "text/xml"
+          :soap12 "application/soap+xml"))
 
       (request-xml       [_] (get-original request-element))
       (request-mapping   [_] (->mapping request-element))

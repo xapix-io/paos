@@ -8,8 +8,6 @@
            org.reficio.ws.SoapContext
            javax.wsdl.extensions.soap.SOAPBinding
            javax.wsdl.extensions.soap12.SOAP12Binding
-           ;; com.ibm.wsdl.extensions.soap.SOAPBindingImpl
-           ;; com.ibm.wsdl.extensions.soap12.SOAP12BindingImpl
            [java.net MalformedURLException]))
 
 (defn ^SoapContext make-wsdl-context []
@@ -26,19 +24,30 @@
 (defn ^Wsdl make-wsdl [wsdl-url]
   (Wsdl/parse wsdl-url))
 
+(defn- binding-has-instance? [binding-builder c]
+  (->> binding-builder
+       (.getBinding)
+       (.getExtensibilityElements)
+       (some (partial instance? c))))
+
 (defn soap-version [binding-builder]
-  (filter (fn [el]
-            (instance? SOAPBinding el))
-          (.getExtensibilityElements (.getBinding binding-builder))))
+  (cond
+    (binding-has-instance? binding-builder SOAPBinding)
+    :soap
+
+    (binding-has-instance? binding-builder SOAP12Binding)
+    :soap12
+
+    :otherwise nil))
 
 (defn make-operation [^SoapContext ctx binding-builder ^SoapOperationImpl operation]
   (let [operation-name  (.getOperationName operation)
         soap-action     (.getSoapAction operation)
+        soap-version    (soap-version binding-builder)
         input-template  (.buildInputMessage operation ctx)
         output-template (.buildOutputMessage operation ctx)
         fault-template  (.buildEmptyFault operation ctx)
-        service         (service/->service soap-action input-template output-template fault-template)]
-    (soap-version binding-builder)
+        service         (service/->service soap-action soap-version input-template output-template fault-template)]
     [operation-name service]))
 
 (defn make-binding
@@ -109,16 +118,17 @@
   (let [soap-service (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
         srv          (get-in soap-service ["BLZServiceSOAP12Binding" :operations "getBank"])
         soap-url     (get-in soap-service ["BLZServiceSOAP12Binding" :url])
-        soap-action  (service/soap-action srv)
+        soap-headers (service/soap-headers srv)
+        content-type (service/content-type srv)
         mapping      (service/request-mapping srv)
         context      (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
         body         (service/wrap-body srv context)
         parse-fn     (partial service/parse-response srv)]
     (-> soap-url
-        (client/post {:content-type "application/soap+xml"
+        (client/post {:content-type content-type
                       :body         body
                       :debug?       true
-                      ;; :headers      {"SOAPAction" soap-action}
+                      :headers      (merge {} soap-headers)
                       })
         :body
         parse-fn))
