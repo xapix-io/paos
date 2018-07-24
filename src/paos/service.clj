@@ -147,15 +147,17 @@
   (fault-template    [this])
   (parse-fault       [this fault-xml]))
 
-(defn- content->fields [content type]
+(defn- content->fields [content type optional? enumeration]
   (let [content (filter #(not (string/starts-with? % "\n")) content)]
     (loop [el (first content) els (rest content) comments [] fields []]
       (if-not el
         fields
         (cond
           (string? el)
-          {:__value nil
-           :__type  type}
+          {:__value
+           (cond-> {:__type type}
+             optional?   (merge {:__optional? true})
+             enumeration (merge {:__enum enumeration}))}
 
           (instance? Comment el)
           (recur (first els) (rest els) (conj comments (:content el)) fields)
@@ -177,7 +179,10 @@
                       original-xml]
   (let [{:keys [type min-occurs max-occurs
                 optional enumeration]} (into {} (map parse-comment comments))
-        fields                         (content->fields content type)]
+        fields                         (content->fields content
+                                                        type
+                                                        (or optional (= min-occurs 0))
+                                                        enumeration)]
     (reify
       Element
       (get-original [_] original-xml)
@@ -227,8 +232,7 @@
                                              (filter (fn [[_ attrv]]
                                                        (= "?" attrv)))
                                              (map (fn [[attr-name _]]
-                                                    [(fix-fn attr-name) {:__value nil
-                                                                         :__type  "string"}]))
+                                                    [(fix-fn attr-name) {:__value {:__type "string"}}]))
                                              (into {})))]
                            {:__attrs attrs}
                            {})
