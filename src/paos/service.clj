@@ -317,7 +317,7 @@
           (selmer/render template context)))
 
       (response-xml      [_] (get-original response-element))
-      (response-mapping  [_] (->mapping response-element identity))
+      (response-mapping  [_] (->mapping response-element))
       (response-template [_] (->template response-element))
 
       (parse-response    [this response-xml]
