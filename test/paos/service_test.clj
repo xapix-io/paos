@@ -82,38 +82,41 @@
 
           (t/testing "extra key :__attrs added for node attributes"
 
-            (t/is (= {:__value nil :__type "string"}
+            (t/is (= {:__value {:__type "string"}}
                      (get-in mapping ["Envelope" "Body" "ComplexObjectWithComplexTag" "BookIds" 0 "BookId" :__attrs "BookType"]))))
 
           (t/is (= {"Envelope"
                     {"Header" {}
                      "Body"
                      {"SimpleObjectWithComplexTag"
-                      {"Field1" {:__value nil :__type nil}
-                       "Field2" {:__value nil :__type nil}}
+                      {"Field1" {:__value {:__type nil}}
+                       "Field2" {:__value {:__type nil}}}
                       "ArrayOneOrMoreRepetition"
-                      {"ArrayFields" [{"ArrayField" {:__value nil :__type "string"}}]}
+                      {"ArrayFields" [{"ArrayField" {:__value {:__type "string"}}}]}
                       "ArrayZeroOrMoreRepetition"
-                      {"ArrayFields" [{"ArrayField" {:__value nil :__type "integer"}}]}
+                      {"ArrayFields" [{"ArrayField" {:__value {:__type "integer"
+                                                               :__optional? true}}}]}
                       "ArrayWithNestedArray"
                       {"ArrayFields"
                        [{"ArrayField"
                          {"NestedArrays"
-                          [{"NestedArray" {:__value nil :__type nil}}]}}]}
+                          [{"NestedArray" {:__value {:__type nil
+                                                     :__optional? true}}}]}}]}
                       "ComplexObjectWithComplexTag"
                       {"BookIds"
                        [{"BookId"
-                         {:__attrs {"BookType" {:__value nil :__type "string"}}
-                          "ID"     {:__value nil :__type "string"}
-                          "Type"   {"SubType" {:__value nil :__type "integer"}}}}]
-                       "RequestId" {:__value nil :__type "string"}
+                         {:__attrs {"BookType" {:__value {:__type "string"}}}
+                          "ID" {:__value {:__type "string"
+                                          :__enum ["FOO_ID" "BAR_ID"]
+                                          :__optional? true}}
+                          "Type" {"SubType" {:__value {:__type "integer"}}}}}]
+                       "RequestId" {:__value {:__type "string"}}
                        "ArrayIds"
                        [{"ArrayId"
                          {:__attrs
-                          {"x" {:__value nil :__type "string"}
-                           "y" {:__value nil :__type "string"}}
-                          :__value nil
-                          :__type  "string"}}]}}}}
+                          {"x" {:__value {:__type "string"}}
+                           "y" {:__value {:__type "string"}}}
+                          :__value {:__type "string"}}}]}}}}
                    mapping))))
 
       (t/testing "->parse-fn return function able to parse xml strings according to the mapping attached to element"
