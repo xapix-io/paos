@@ -127,8 +127,8 @@
   (is-enum?     [this]))
 
 (defprotocol Service
-  (soap-headers      [this])
   (content-type      [this])
+  (soap-headers      [this])
   (soap-action       [this])
   (soap-version      [this])
 
@@ -142,11 +142,10 @@
   (response-template [this])
   (parse-response    [this response-xml])
 
-  ;; (fault-xml         [this])
-  ;; (fault-mapping     [this])
-  ;; (fault-template    [this])
-  ;; (parse-fault       [this fault-xml])
-  )
+  (fault-xml         [this])
+  (fault-mapping     [this])
+  (fault-template    [this])
+  (parse-fault       [this fault-xml]))
 
 (defn- content->fields [content type]
   (let [content (filter #(not (string/starts-with? % "\n")) content)]
@@ -306,37 +305,35 @@
       (is-enum? [_] (boolean (not-empty enumeration))))))
 
 (defn xml->element [msg]
-  (node->element
-   (data-xml/parse (java.io.StringReader. msg)
-                   :namespace-aware false
-                   :include-node? #{:element :characters :comment})
-   []
-   msg))
+  (when (not-empty msg)
+    (node->element
+     (data-xml/parse (java.io.StringReader. msg)
+                     :namespace-aware false
+                     :include-node? #{:element :characters :comment})
+     []
+     msg)))
 
-(defn ->service [soap-action soap-version request-msg response-msg]
+(defn ->service [action version request-msg response-msg fault-msg]
   (let [request-element  (xml->element request-msg)
         response-element (xml->element response-msg)
-        ;; fault-element    (xml->element fault-msg)
-        ]
+        fault-element    (xml->element fault-msg)]
     (reify
       Service
-      (soap-headers      [this]
-        (case (if (keyword? soap-version)
-                (name soap-version)
-                soap-version)
-          "soap"   {"SOAPAction" soap-action}
-          "soap12" {}))
-      (soap-action       [_] soap-action)
-      (soap-version      [_] soap-version)
-
-      (content-type      [_]
-        (case (if (keyword? soap-version)
-                (name soap-version)
-                soap-version)
+      (content-type      [this]
+        (case (soap-version this)
           "soap"   "text/xml"
           "soap12" (str "application/soap+xml;"
-                       (when-not (empty? soap-action)
-                         (format "action=\"%s\"" soap-action)))))
+                        (when-not (empty? (soap-action this))
+                          (format "action=\"%s\"" (soap-action this))))))
+      (soap-headers      [this]
+        (case (soap-version this)
+          "soap"   {"SOAPAction" (soap-action this)}
+          "soap12" {}))
+      (soap-action       [_] action)
+      (soap-version      [this]
+        (if (keyword? version)
+          (name version)
+          version))
 
       (request-xml       [_] (get-original request-element))
       (request-mapping   [_] (->mapping request-element))
@@ -354,11 +351,10 @@
         (let [parse-fn (->parse-fn response-element)]
           (parse-fn response-xml)))
 
-      ;; (fault-xml         [_] (get-original fault-element))
-      ;; (fault-mapping     [_] (->mapping fault-element))
-      ;; (fault-template    [_] (->template fault-element))
+      (fault-xml         [_] (get-original fault-element))
+      (fault-mapping     [_] (->mapping fault-element))
+      (fault-template    [_] (->template fault-element))
 
-      ;; (parse-fault       [this fault-xml]
-      ;;   (let [parse-fn (->parse-fn fault-element)]
-      ;;     (parse-fn fault-xml)))
-      )))
+      (parse-fault       [this fault-xml]
+        (let [parse-fn (->parse-fn fault-element)]
+          (parse-fn fault-xml))))))
