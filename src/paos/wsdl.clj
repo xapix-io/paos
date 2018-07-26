@@ -45,8 +45,8 @@
         soap-version    (soap-version binding-builder)
         input-template  (.buildInputMessage operation ctx)
         output-template (.buildOutputMessage operation ctx)
-        fault-template  (.buildEmptyFault operation ctx)
-        service         (service/->service soap-action soap-version input-template output-template fault-template)]
+        ;; fault-template  (.buildEmptyFault operation ctx)
+        service         (service/->service soap-action soap-version input-template output-template)]
     [operation-name service]))
 
 (defn make-binding
@@ -115,8 +115,8 @@
   (require '[paos.wsdl :as wsdl])
 
   (let [soap-service   (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
-        srv            (get-in soap-service ["BLZServiceSOAP12Binding" :operations "getBank"])
-        soap-url       (get-in soap-service ["BLZServiceSOAP12Binding" :url])
+        srv            (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
+        soap-url       (get-in soap-service ["BLZServiceSOAP11Binding" :url])
         soap-headers   (service/soap-headers srv)
         content-type   (service/content-type srv)
         mapping        (service/request-mapping srv)
@@ -124,9 +124,12 @@
         body           (service/wrap-body srv context)
         parse-fn       (partial service/parse-response srv)
         parse-fault-fn (partial service/parse-fault srv)]
-    (-> soap-url
+    [content-type soap-headers]
+    #_(-> soap-url
         (client/post {:content-type content-type
                       :body         body
                       :headers      (merge {} soap-headers)})
         :body
-        parse-fn)))
+        parse-fn))
+
+  )

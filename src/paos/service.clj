@@ -311,17 +311,21 @@
    []
    msg))
 
-(defn ->service [soap-action soap-version request-msg response-msg fault-msg]
+(defn ->service [soap-action soap-version request-msg response-msg]
   (let [request-element  (xml->element request-msg)
         response-element (xml->element response-msg)
-        fault-element    (xml->element fault-msg)]
+        ;; fault-element    (xml->element fault-msg)
+        ]
     (reify
       Service
       (soap-headers      [this]
-        (case soap-version
-          :soap {"SOAPAction" soap-action}
-          :soap12 {}))
+        (case (if (keyword? soap-version)
+                (name soap-version)
+                soap-version)
+          "soap"   {"SOAPAction" soap-action}
+          "soap12" {}))
       (soap-action       [_] soap-action)
+      (soap-version      [_] soap-version)
 
       (content-type      [this]
         (case soap-version
@@ -346,10 +350,11 @@
         (let [parse-fn (->parse-fn response-element)]
           (parse-fn response-xml)))
 
-      (fault-xml         [_] (get-original fault-element))
-      (fault-mapping     [_] (->mapping fault-element))
-      (fault-template    [_] (->template fault-element))
+      ;; (fault-xml         [_] (get-original fault-element))
+      ;; (fault-mapping     [_] (->mapping fault-element))
+      ;; (fault-template    [_] (->template fault-element))
 
-      (parse-fault       [this fault-xml]
-        (let [parse-fn (->parse-fn fault-element)]
-          (parse-fn fault-xml))))))
+      ;; (parse-fault       [this fault-xml]
+      ;;   (let [parse-fn (->parse-fn fault-element)]
+      ;;     (parse-fn fault-xml)))
+      )))
