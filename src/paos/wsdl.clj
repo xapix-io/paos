@@ -2,9 +2,12 @@
   (:require [clojure.java.io :as io]
             [paos.service :as service])
   (:import java.net.MalformedURLException
+           javax.wsdl.Binding
            javax.wsdl.extensions.soap.SOAPBinding
            javax.wsdl.extensions.soap12.SOAP12Binding
+           javax.xml.namespace.QName
            [org.reficio.ws SoapBuilderException SoapContext]
+           [org.reficio.ws.builder SoapBuilder]
            [org.reficio.ws.builder.core SoapOperationImpl Wsdl]))
 
 (defn ^SoapContext make-wsdl-context []
@@ -18,14 +21,13 @@
 (defn ^java.net.URL make-wsdl-url [^String wsdl-path]
   (io/as-url (io/file wsdl-path)))
 
-(defn ^Wsdl make-wsdl [wsdl-url]
+(defn ^Wsdl make-wsdl [^java.net.URL wsdl-url]
   (Wsdl/parse wsdl-url))
 
-(defn- binding-has-instance? [binding-builder c]
-  (->> binding-builder
-       (.getBinding)
-       (.getExtensibilityElements)
-       (some (partial instance? c))))
+(defn- binding-has-instance? [^SoapBuilder binding-builder c]
+  (let [^Binding binding (.getBinding binding-builder)
+        elements (.getExtensibilityElements binding)]
+    (some (partial instance? c) elements)))
 
 (defn soap-version [binding-builder]
   (cond
@@ -37,7 +39,7 @@
 
     :otherwise nil))
 
-(defn make-operation [^SoapContext ctx binding-builder ^SoapOperationImpl operation]
+(defn make-operation [^SoapContext ctx ^SoapBuilder binding-builder ^SoapOperationImpl operation]
   (let [operation-name  (.getOperationName operation)
         soap-action     (.getSoapAction operation)
         soap-version    (soap-version binding-builder)
@@ -90,10 +92,10 @@
     :otherwise (wsdl-content->wsdl path-or-content)))
 
 (defn parse [wsdl]
-  (let [wsdl (->wsdl wsdl)
+  (let [^Wsdl wsdl (->wsdl wsdl)
         ctx (make-wsdl-context)]
     (into {}
-          (map (fn [binding]
+          (map (fn [^QName binding]
                  (try
                    (make-binding wsdl
                                  (.getLocalPart binding)

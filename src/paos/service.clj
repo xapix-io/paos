@@ -4,9 +4,9 @@
             [inflections.core :refer [plural]]
             [clojure.data.zip :as data-zip]
             [clojure.data.zip.xml :as data-zip-xml]
-            [clojure.xml :as xml]
             [clojure.zip :as zip]
-            [selmer.parser :as selmer]))
+            [selmer.parser :as selmer])
+  (:import clojure.data.xml.node.Comment))
 
 (declare node->element)
 
@@ -156,15 +156,15 @@
           {:__value nil
            :__type  type}
 
-          (instance? clojure.data.xml.node.Comment el)
+          (instance? Comment el)
           (recur (first els) (rest els) (conj comments (:content el)) fields)
 
           :otherwise
           (recur (first els) (rest els) [] (conj fields (node->element el comments nil))))))))
 
 (defn- string->stream
-  ([s] (string->stream s "UTF-8"))
-  ([s encoding]
+  ([^String s] (string->stream s "UTF-8"))
+  ([^String s ^String encoding]
    (-> s
        (.getBytes encoding)
        (java.io.ByteArrayInputStream.))))
@@ -319,17 +319,16 @@
       Service
       (soap-headers      [this]
         (case soap-version
-          :soap {"SOAPAction" (soap-action this)}
+          :soap {"SOAPAction" soap-action}
           :soap12 {}))
       (soap-action       [_] soap-action)
 
       (content-type      [this]
-        (let [soap-action (soap-action this)
-              action-part-in-content-type (when-not (empty? soap-action)
-                                            (format "action=\"%s\"" soap-action))]
-          (case soap-version
-            :soap   "text/xml"
-            :soap12 (str "application/soap+xml;" action-part-in-content-type))))
+        (case soap-version
+          :soap   "text/xml"
+          :soap12 (str "application/soap+xml;"
+                       (when-not (empty? soap-action)
+                         (format "action=\"%s\"" soap-action)))))
 
       (request-xml       [_] (get-original request-element))
       (request-mapping   [_] (->mapping request-element))

@@ -16,16 +16,16 @@
  :paths ["src" "resources"]
 
  :aliases
- {:1.8 {:override-deps {org.clojure/clojure {:mvn/version "1.8.0"}}}
-  :1.9 {:override-deps {org.clojure/clojure {:mvn/version "1.9.0"}}}
+ {:1.8    {:override-deps {org.clojure/clojure {:mvn/version "1.8.0"}}}
+  :1.9    {:override-deps {org.clojure/clojure {:mvn/version "1.9.0"}}}
   :master {:override-deps {org.clojure/clojure {:mvn/version "1.10.0-master-SNAPSHOT"}}}
 
   :test {:extra-paths ["test" "test_resources"]
-         :extra-deps {org.clojure/test.check {:mvn/version "RELEASE"}
-                      clj-http               {:mvn/version "3.9.0"}}}
+         :extra-deps  {org.clojure/test.check {:mvn/version "RELEASE"}
+                       clj-http               {:mvn/version "RELEASE"}}}
 
   :runner {:extra-deps {com.cognitect/test-runner
                         {:git/url "https://github.com/cognitect-labs/test-runner"
-                         :sha "76568540e7f40268ad2b646110f237a60295fa3c"}}
-           :main-opts ["-m" "cognitect.test-runner"
-                       "-d" "test"]}}}
+                         :sha     "76568540e7f40268ad2b646110f237a60295fa3c"}}
+           :main-opts  ["-m" "cognitect.test-runner"
+                        "-d" "test"]}}}
