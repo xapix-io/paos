@@ -329,10 +329,12 @@
       (soap-action       [_] soap-action)
       (soap-version      [_] soap-version)
 
-      (content-type      [this]
-        (case soap-version
-          :soap   "text/xml"
-          :soap12 (str "application/soap+xml;"
+      (content-type      [_]
+        (case (if (keyword? soap-version)
+                (name soap-version)
+                soap-version)
+          "soap"   "text/xml"
+          "soap12" (str "application/soap+xml;"
                        (when-not (empty? soap-action)
                          (format "action=\"%s\"" soap-action)))))
 
