@@ -114,6 +114,13 @@
   (require '[paos.service :as service])
   (require '[paos.wsdl :as wsdl])
 
+  (defn parse-response [{:keys [status body] :as response} body-parser fail-parser]
+    (update response
+            :body
+            (case status
+              200 (body-parser body)
+              500 (fail-parser body))))
+
   (let [soap-service   (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
         srv            (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
         soap-url       (get-in soap-service ["BLZServiceSOAP11Binding" :url])
@@ -124,12 +131,11 @@
         body           (service/wrap-body srv context)
         parse-fn       (partial service/parse-response srv)
         parse-fault-fn (partial service/parse-fault srv)]
-    [content-type soap-headers]
-    #_(-> soap-url
+    (-> soap-url
         (client/post {:content-type content-type
                       :body         body
-                      :headers      (merge {} soap-headers)})
-        :body
-        parse-fn))
+                      :headers      (merge {} soap-headers)
+                      :do-not-throw true})
+        parse-response))
 
   )
