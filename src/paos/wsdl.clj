@@ -37,7 +37,7 @@
     (binding-has-instance? binding-builder SOAP12Binding)
     :soap12
 
-    :otherwise nil))
+    :otherwise :soap))
 
 (defn make-operation [^SoapContext ctx ^SoapBuilder binding-builder ^SoapOperationImpl operation]
   (let [operation-name  (.getOperationName operation)
@@ -45,8 +45,8 @@
         soap-version    (soap-version binding-builder)
         input-template  (.buildInputMessage operation ctx)
         output-template (.buildOutputMessage operation ctx)
-        ;; fault-template  (.buildEmptyFault operation ctx)
-        service         (service/->service soap-action soap-version input-template output-template)]
+        fault-template  (.buildEmptyFault operation ctx)
+        service         (service/->service soap-action soap-version input-template output-template fault-template)]
     [operation-name service]))
 
 (defn make-binding
