@@ -130,6 +130,7 @@
   (soap-headers      [this])
   (content-type      [this])
   (soap-action       [this])
+  (soap-version      [this])
 
   (request-xml       [this])
   (request-mapping   [this])
@@ -141,10 +142,11 @@
   (response-template [this])
   (parse-response    [this response-xml])
 
-  (fault-xml         [this])
-  (fault-mapping     [this])
-  (fault-template    [this])
-  (parse-fault       [this fault-xml]))
+  ;; (fault-xml         [this])
+  ;; (fault-mapping     [this])
+  ;; (fault-template    [this])
+  ;; (parse-fault       [this fault-xml])
+  )
 
 (defn- content->fields [content type]
   (let [content (filter #(not (string/starts-with? % "\n")) content)]
