@@ -29,7 +29,7 @@
         <dependency>
             <groupId>selmer</groupId>
             <artifactId>selmer</artifactId>
-            <version>1.11.8</version>
+            <version>1.12.1</version>
         </dependency>
         <dependency>
             <groupId>inflections</groupId>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.clojure</groupId>
             <artifactId>tools.cli</artifactId>
-            <version>0.3.5</version>
+            <version>0.4.1</version>
         </dependency>
     </dependencies>
     <build>
