@@ -5,7 +5,8 @@
             [clojure.string :as string]
             [clojure.zip :as zip]
             [inflections.core :refer [plural]]
-            [selmer.parser :as selmer]))
+            [selmer.parser :as selmer])
+  (:import clojure.data.xml.node.Comment))
 
 (declare node->element)
 
@@ -158,7 +159,7 @@
              optional?   (merge {:__optional? true})
              enumeration (merge {:__enum enumeration}))}
 
-          (not (contains? el :tag))
+          (instance? Comment el)
           (recur (first els) (rest els) (conj comments (:content el)) fields)
 
           :otherwise
