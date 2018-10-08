@@ -1,12 +1,12 @@
 (ns paos.service
   (:require [clojure.data.xml :as data-xml]
-            [clojure.string :as string]
-            [inflections.core :refer [plural]]
             [clojure.data.zip :as data-zip]
             [clojure.data.zip.xml :as data-zip-xml]
-            [clojure.xml :as xml]
+            [clojure.string :as string]
             [clojure.zip :as zip]
-            [selmer.parser :as selmer]))
+            [inflections.core :refer [plural]]
+            [selmer.parser :as selmer])
+  (:import clojure.data.xml.node.Comment))
 
 (declare node->element)
 
@@ -127,35 +127,47 @@
   (is-enum?     [this]))
 
 (defprotocol Service
+  (content-type      [this])
+  (soap-headers      [this])
   (soap-action       [this])
+  (soap-version      [this])
+
   (request-xml       [this])
   (request-mapping   [this])
   (request-template  [this])
   (wrap-body         [this context])
+
   (response-xml      [this])
   (response-mapping  [this])
   (response-template [this])
-  (parse-response    [this response-xml]))
+  (parse-response    [this response-xml])
 
-(defn- content->fields [content type]
+  (fault-xml         [this])
+  (fault-mapping     [this])
+  (fault-template    [this])
+  (parse-fault       [this fault-xml]))
+
+(defn- content->fields [content type optional? enumeration]
   (let [content (filter #(not (string/starts-with? % "\n")) content)]
     (loop [el (first content) els (rest content) comments [] fields []]
       (if-not el
         fields
         (cond
           (string? el)
-          {:__value nil
-           :__type  type}
+          {:__value
+           (cond-> {:__type type}
+             optional?   (merge {:__optional? true})
+             enumeration (merge {:__enum enumeration}))}
 
-          (instance? clojure.data.xml.node.Comment el)
+          (instance? Comment el)
           (recur (first els) (rest els) (conj comments (:content el)) fields)
 
           :otherwise
           (recur (first els) (rest els) [] (conj fields (node->element el comments nil))))))))
 
 (defn- string->stream
-  ([s] (string->stream s "UTF-8"))
-  ([s encoding]
+  ([^String s] (string->stream s "UTF-8"))
+  ([^String s ^String encoding]
    (-> s
        (.getBytes encoding)
        (java.io.ByteArrayInputStream.))))
@@ -163,11 +175,14 @@
 (defn- node->element [{:keys [tag attrs content]
                        :or   {content '()
                               attrs   {}}}
-                     comments
-                     original-xml]
+                      comments
+                      original-xml]
   (let [{:keys [type min-occurs max-occurs
                 optional enumeration]} (into {} (map parse-comment comments))
-        fields                         (content->fields content type)]
+        fields                         (content->fields content
+                                                        type
+                                                        (or optional (= min-occurs 0))
+                                                        enumeration)]
     (reify
       Element
       (get-original [_] original-xml)
@@ -217,8 +232,7 @@
                                              (filter (fn [[_ attrv]]
                                                        (= "?" attrv)))
                                              (map (fn [[attr-name _]]
-                                                    [(fix-fn attr-name) {:__value nil
-                                                                         :__type  "string"}]))
+                                                    [(fix-fn attr-name) {:__value {:__type "string"}}]))
                                              (into {})))]
                            {:__attrs attrs}
                            {})
@@ -295,19 +309,36 @@
       (is-enum? [_] (boolean (not-empty enumeration))))))
 
 (defn xml->element [msg]
-  (node->element
-   (data-xml/parse (java.io.StringReader. msg)
-                   :namespace-aware false
-                   :include-node? #{:element :characters :comment})
-   []
-   msg))
+  (when (not-empty msg)
+    (node->element
+     (data-xml/parse (java.io.StringReader. msg)
+                     :namespace-aware false
+                     :include-node? #{:element :characters :comment})
+     []
+     msg)))
 
-(defn ->service [soap-action request-msg response-msg]
+(defn ->service [action version request-msg response-msg fault-msg]
   (let [request-element  (xml->element request-msg)
-        response-element (xml->element response-msg)]
+        response-element (xml->element response-msg)
+        fault-element    (xml->element fault-msg)]
     (reify
       Service
-      (soap-action       [_] soap-action)
+      (content-type      [this]
+        (case (soap-version this)
+          "soap"   "text/xml"
+          "soap12" (str "application/soap+xml;"
+                        (when-not (empty? (soap-action this))
+                          (format "action=\"%s\"" (soap-action this))))))
+      (soap-headers      [this]
+        (case (soap-version this)
+          "soap"   {"SOAPAction" (soap-action this)}
+          "soap12" {}))
+      (soap-action       [_] action)
+      (soap-version      [this]
+        (if (keyword? version)
+          (name version)
+          version))
+
       (request-xml       [_] (get-original request-element))
       (request-mapping   [_] (->mapping request-element))
       (request-template  [_] (->template request-element))
@@ -322,4 +353,12 @@
 
       (parse-response    [this response-xml]
         (let [parse-fn (->parse-fn response-element)]
-          (parse-fn response-xml))))))
+          (parse-fn response-xml)))
+
+      (fault-xml         [_] (get-original fault-element))
+      (fault-mapping     [_] (->mapping fault-element))
+      (fault-template    [_] (->template fault-element))
+
+      (parse-fault       [this fault-xml]
+        (let [parse-fn (->parse-fn fault-element)]
+          (parse-fn fault-xml))))))

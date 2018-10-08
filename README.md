@@ -32,7 +32,7 @@ Because soap-ws depends on a list of external dependencies that are not publishe
                     ["soapui" "http://www.soapui.org/repository/maven2"]
                     ["enonic" "http://repo.enonic.com/public/"]
                     ...]
-     :dependencies [[io.xapix/paos "0.1.3"]
+     :dependencies [[io.xapix/paos "0.2.0"]
                     ...]
     }
 
@@ -41,7 +41,7 @@ Because soap-ws depends on a list of external dependencies that are not publishe
     (set-env! :repositories #(conj % ["reficio" {:url "http://repo.reficio.org/maven/"}]
                                      ["soapui" {:url "http://www.soapui.org/repository/maven2"}]
                                      ["enonic" {:url "http://repo.enonic.com/public/"}])
-              :dependencies #(conj % [io.xapix/paos "0.1.3"])
+              :dependencies #(conj % [io.xapix/paos "0.2.0"])
 
 ## deps.edn
 
@@ -52,14 +52,14 @@ Because soap-ws depends on a list of external dependencies that are not publishe
                  "central"  {:url "https://repo1.maven.org/maven2/"}
                  "clojars"  {:url "https://clojars.org/repo/"}
                  "sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}}
-     :deps {io.xapix/paos {:mvn/version "0.1.3"}
+     :deps {io.xapix/paos {:mvn/version "0.2.0"}
             ...}
     ...
     }
 
 ## Command line interface
 
-You can examine any WSDL with simple command line interface. If you already have all required repos in your deps.edn just execute `clj -Sdeps '{:deps {io.xapix/paos {:mvn/version "0.1.3"}}}' -m paos.core -h` and check available options.
+You can examine any WSDL with simple command line interface. If you already have all required repos in your deps.edn just execute `clj -Sdeps '{:deps {io.xapix/paos {:mvn/version "0.2.0"}}}' -m paos.core -h` and check available options.
 
 Or you can use standalone script with everything inplace:
 
@@ -68,7 +68,7 @@ Or you can use standalone script with everything inplace:
 set -e
 
 MVN_REPOS='{"reficio" {:url "http://repo.reficio.org/maven/"} "soapui" {:url "http://www.soapui.org/repository/maven2"} "enonic" {:url "http://repo.enonic.com/public/"}}'
-DEPS='{io.xapix/paos {:mvn/version "0.1.3"}}'
+DEPS='{io.xapix/paos {:mvn/version "0.2.0"}}'
 
 clojure -Srepro -Sdeps "{:deps $DEPS :mvn/repos $MVN_REPOS}" -m paos.core $@
 ```
@@ -81,20 +81,29 @@ clojure -Srepro -Sdeps "{:deps $DEPS :mvn/repos $MVN_REPOS}" -m paos.core $@
 (require '[paos.service :as service])
 (require '[paos.wsdl :as wsdl])
 
-(let [soap-service (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
-      srv          (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
-      soap-url     (get-in soap-service ["BLZServiceSOAP11Binding" :url])
-      soap-action  (service/soap-action srv)
-      mapping      (service/request-mapping srv)
-      context      (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
-      body         (service/wrap-body srv context)
-      parse-fn     (partial service/parse-response srv)]
+(defn parse-response [{:keys [status body] :as response} body-parser fail-parser]
+  (assoc response
+         :body
+         (case status
+           200 (body-parser body)
+           500 (fail-parser body))))
+
+(let [soap-service   (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
+      srv            (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
+      soap-url       (get-in soap-service ["BLZServiceSOAP11Binding" :url])
+      soap-headers   (service/soap-headers srv)
+      content-type   (service/content-type srv)
+      mapping        (service/request-mapping srv)
+      context        (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
+      body           (service/wrap-body srv context)
+      resp-parser    (partial service/parse-response srv)
+      fault-parser   (partial service/parse-fault srv)]
   (-> soap-url
-      (client/post {:content-type "text/xml"
+      (client/post {:content-type content-type
                     :body         body
-                    :headers      {"SOAPAction" soap-action}})
-      :body
-      parse-fn))
+                    :headers      (merge {} soap-headers)
+                    :do-not-throw true})
+      (parse-response resp-parser fault-parser)))
 ```
 
 # Quick start guide
@@ -142,11 +151,10 @@ Each operation is an object with implemented with paos.service/Service methods w
 (let [srv (get-in soap-service ["SomeServiceBinding" "operation1"]]
       (service/request-mapping srv))
   ;; => {"Envelope" {"Headers" []
-  ;;                 "Body" {"SomeWrapper" {"Value" {:__value nil
-  ;;                                                 :__type "string"}}}}}
+  ;;                 "Body" {"SomeWrapper" {"Value" {:__value {:__type "string"}}}}}}
 ```
 
-`service/request-mapping` should give you an example how a request should look like to be converted into payload xml. Places where you have to add some real values are marked as `{:__value nil}` with the data type expected by the service in `{:__type "string"}`
+`service/request-mapping` should give you an example how a request should look like to be converted into payload xml. Places where you have to add some real values are marked as `{:__value {:__type "string"}}` with the data type expected by the service in `{:__type "string"}`
 
 Some data types can have arrays of complex objects:
 
@@ -182,14 +190,11 @@ This type definition should be converted into a Clojure data structure like the 
  {"Contatos"
   [{"Contato"
     {"cdEndereco"
-     {:__value nil
-      :__type "string"}
+     {:__value {:__type "string"}}
      "cdBairro"
-     {:__value nil
-      :__type "string"}
+     {:__value {:__type "string"}}
      "email"
-     {:__value nil
-      :__type "integer"}}}]}}
+     {:__value {:__type "integer"}}}}]}}
 ```
 
 Here in `"msgBody"` you can find the `"Contatos"` keyword with an array of one element. That means that the payload's `"msgBody"` might contain zero or more occurrences of `"Contato"` object. Just attach as many as you want into it and all of them will be injected correctly into the request payload.
@@ -216,13 +221,14 @@ Now you can use your favorite http library to make the request to the service:
 
 (let [soap-url (:url soap-service)
       srv (get-in soap-service ["SomeServiceBinding" "operation1"]
-                  soap-action (service/soap-action srv)
+                  soap-headers (service/soap-headers srv)
+                  content-type (service/content-type srv)
                   mapping (service/request-mapping srv)
                   context (do-something-with-mapping mapping)
                   body (service/wrap-body srv context)]
-      (client/post soap-url {:content-type "text/plain"
-                             :body body
-                             :headers {"SoapAction" soap-action}}))
+      (client/post soap-url {:content-type content-type
+                             :headers soap-headers
+                             :body body}))
   ;; => {:status 200
   ;;     :body "<xml>...</xml>"
   ;;     ...}
@@ -237,15 +243,16 @@ To convert the XML from the response you can use parse function from your servic
 (let [soap-service (parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
       srv          (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
       soap-url     (get-in soap-service ["BLZServiceSOAP11Binding" :url])
-      soap-action  (service/soap-action srv)
+      content-type (service/content-type srv)
+      headers      (service/soap-headers srv)
       mapping      (service/request-mapping srv)
       context      (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
       body         (service/wrap-body srv context)
       parse-fn     (partial service/parse-response srv)]
   (-> soap-url
-      (client/post {:content-type "text/xml"
+      (client/post {:content-type content-type
                     :body         body
-                    :headers      {"SOAPAction" soap-action}})
+                    :headers      headers})
       :body
       parse-fn))
 ```

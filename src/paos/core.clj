@@ -1,8 +1,9 @@
 (ns paos.core
-  (:require [paos.wsdl :as wsdl]
-            [paos.service :as service]
+  (:gen-class)
+  (:require [clojure.pprint :as pprint]
             [clojure.tools.cli :refer [parse-opts]]
-            [clojure.pprint :as pprint]))
+            [paos.service :as service]
+            [paos.wsdl :as wsdl]))
 
 (def cli-options
   [["-w" "--wsdl WSDL" "Url or filesystem path or a content of wsdl. (Required)"
@@ -43,14 +44,24 @@
               (if-let [operation (-> args :options :operation)]
                 (let [srv (get-in wsdl [binding :operations operation])]
                   (do
-                    (println "\nService url:\n")
+                    (println "--- Service url:")
                     (println (get-in wsdl [binding :url]))
-                    (println "\nSOAP action:\n")
-                    (println (service/soap-action srv))
-                    (println "\nRequest message:\n")
+                    (println "------")
+                    (println "--- Request content-type:")
+                    (println (service/content-type srv))
+                    (println "------")
+                    (println "--- Request headers:")
+                    (println (service/soap-headers srv))
+                    (println "------")
+                    (println "--- Request message:")
                     (println (service/request-xml srv))
-                    (println "\nResponse message:\n")
-                    (println (service/response-xml srv))))
+                    (println "------")
+                    (println "--- Response message:")
+                    (println (service/response-xml srv))
+                    (println "------")
+                    (println "--- Fault message:")
+                    (println (service/fault-xml srv))
+                    (println "------")))
                 (print-table (select-keys wsdl [binding])))
               (print-table wsdl))
             (System/exit 0))
