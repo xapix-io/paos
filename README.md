@@ -28,10 +28,8 @@ Because soap-ws depends on a list of external dependencies that are not publishe
 ## leiningen
 
     {...
-     :repositories [["reficio" "http://maven.jumpmind.com/maven/"]
-                    ["eviware" "http://smartbearsoftware.com/repository/maven2/"]
-                    ["soapui" "http://www.soapui.org/repository/maven2"]
-                    ["enonic" "http://repo.enonic.com/public/"]
+     :repositories [["eviware" "https://smartbearsoftware.com/repository/maven2/"]
+                    ["enonic" "https://repo.enonic.com/public/"]
                     ...]
      :dependencies [[io.xapix/paos "0.2.0"]
                     ...]
@@ -39,22 +37,15 @@ Because soap-ws depends on a list of external dependencies that are not publishe
 
 ## boot
 
-    (set-env! :repositories #(conj % ["reficio" {:url "http://maven.jumpmind.com/maven/"}]
-                                     ["soapui" {:url "http://www.soapui.org/repository/maven2"}]
-                                     ["eviware" {:url "http://smartbearsoftware.com/repository/maven2/"}]
-                                     ["enonic" {:url "http://repo.enonic.com/public/"}])
+    (set-env! :repositories #(conj % ["eviware" {:url "https://smartbearsoftware.com/repository/maven2/"}]
+                                     ["enonic" {:url "https://repo.enonic.com/public/"}])
               :dependencies #(conj % [io.xapix/paos "0.2.0"])
 
 ## deps.edn
 
     {...
-     :mvn/repos {"reficio"  {:url "http://maven.jumpmind.com/maven/"}
-                 "eviware"  {:url "http://smartbearsoftware.com/repository/maven2/"}
-                 "soapui"   {:url "http://www.soapui.org/repository/maven2"}
-                 "enonic"   {:url "http://repo.enonic.com/public/"}
-                 "central"  {:url "https://repo1.maven.org/maven2/"}
-                 "clojars"  {:url "https://clojars.org/repo/"}
-                 "sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}}
+     :mvn/repos {"eviware"  {:url "http://smartbearsoftware.com/repository/maven2/"}
+                 "enonic"   {:url "http://repo.enonic.com/public/"}}}}
      :deps {io.xapix/paos {:mvn/version "0.2.0"}
             ...}
     ...
