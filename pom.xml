@@ -52,20 +52,16 @@
     </build>
     <repositories>
         <repository>
-            <id>central</id>
-            <url>https://repo1.maven.org/maven2/</url>
-        </repository>
-        <repository>
             <id>clojars</id>
             <url>https://clojars.org/repo/</url>
         </repository>
         <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <id>reficio</id>
+            <url>http://maven.jumpmind.com/maven/</url>
         </repository>
         <repository>
-            <id>reficio</id>
-            <url>http://repo.reficio.org/maven/</url>
+            <id>eviware</id>
+            <url>http://smartbearsoftware.com/repository/maven2/</url>
         </repository>
         <repository>
             <id>soapui</id>
@@ -74,6 +70,10 @@
         <repository>
             <id>enonic</id>
             <url>http://repo.enonic.com/public/</url>
+        </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
     <distributionManagement>

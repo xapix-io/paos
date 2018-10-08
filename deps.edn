@@ -6,7 +6,8 @@
         inflections              {:mvn/version "0.13.0"}
         org.clojure/tools.cli    {:mvn/version "0.4.1"}}
 
- :mvn/repos {"reficio"  {:url "http://repo.reficio.org/maven/"}
+ :mvn/repos {"reficio"  {:url "http://maven.jumpmind.com/maven/"}
+             "eviware"  {:url "http://smartbearsoftware.com/repository/maven2/"}
              "soapui"   {:url "http://www.soapui.org/repository/maven2"}
              "enonic"   {:url "http://repo.enonic.com/public/"}
              "central"  {:url "https://repo1.maven.org/maven2/"}

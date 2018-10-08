@@ -28,7 +28,8 @@ Because soap-ws depends on a list of external dependencies that are not publishe
 ## leiningen
 
     {...
-     :repositories [["reficio" "http://repo.reficio.org/maven/"]
+     :repositories [["reficio" "http://maven.jumpmind.com/maven/"]
+                    ["eviware" "http://smartbearsoftware.com/repository/maven2/"]
                     ["soapui" "http://www.soapui.org/repository/maven2"]
                     ["enonic" "http://repo.enonic.com/public/"]
                     ...]
@@ -38,15 +39,17 @@ Because soap-ws depends on a list of external dependencies that are not publishe
 
 ## boot
 
-    (set-env! :repositories #(conj % ["reficio" {:url "http://repo.reficio.org/maven/"}]
+    (set-env! :repositories #(conj % ["reficio" {:url "http://maven.jumpmind.com/maven/"}]
                                      ["soapui" {:url "http://www.soapui.org/repository/maven2"}]
+                                     ["eviware" {:url "http://smartbearsoftware.com/repository/maven2/"}]
                                      ["enonic" {:url "http://repo.enonic.com/public/"}])
               :dependencies #(conj % [io.xapix/paos "0.2.0"])
 
 ## deps.edn
 
     {...
-     :mvn/repos {"reficio"  {:url "http://repo.reficio.org/maven/"}
+     :mvn/repos {"reficio"  {:url "http://maven.jumpmind.com/maven/"}
+                 "eviware"  {:url "http://smartbearsoftware.com/repository/maven2/"}
                  "soapui"   {:url "http://www.soapui.org/repository/maven2"}
                  "enonic"   {:url "http://repo.enonic.com/public/"}
                  "central"  {:url "https://repo1.maven.org/maven2/"}
@@ -67,7 +70,7 @@ Or you can use standalone script with everything inplace:
 #!/usr/bin/env bash
 set -e
 
-MVN_REPOS='{"reficio" {:url "http://repo.reficio.org/maven/"} "soapui" {:url "http://www.soapui.org/repository/maven2"} "enonic" {:url "http://repo.enonic.com/public/"}}'
+MVN_REPOS='{"reficio" {:url "http://maven.jumpmind.com/maven/"} "soapui" {:url "http://www.soapui.org/repository/maven2"} "enonic" {:url "http://repo.enonic.com/public/"}}'
 DEPS='{io.xapix/paos {:mvn/version "0.2.0"}}'
 
 clojure -Srepro -Sdeps "{:deps $DEPS :mvn/repos $MVN_REPOS}" -m paos.core $@
