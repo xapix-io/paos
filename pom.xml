@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.xapix</groupId>
     <artifactId>paos</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1-SNAPSHOT</version>
     <name>paos</name>
     <dependencies>
         <dependency>
@@ -20,6 +20,17 @@
             <groupId>org.clojure</groupId>
             <artifactId>data.zip</artifactId>
             <version>0.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reficio</groupId>
+            <artifactId>soap-legacy</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xmlbeans</groupId>
+                    <artifactId>xbean</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.reficio</groupId>
@@ -56,20 +67,8 @@
             <url>https://clojars.org/repo/</url>
         </repository>
         <repository>
-            <id>reficio</id>
-            <url>http://maven.jumpmind.com/maven/</url>
-        </repository>
-        <repository>
-            <id>eviware</id>
-            <url>http://smartbearsoftware.com/repository/maven2/</url>
-        </repository>
-        <repository>
-            <id>soapui</id>
-            <url>http://www.soapui.org/repository/maven2</url>
-        </repository>
-        <repository>
             <id>enonic</id>
-            <url>http://repo.enonic.com/public/</url>
+            <url>https://repo.enonic.com/public/</url>
         </repository>
         <repository>
             <id>sonatype</id>
