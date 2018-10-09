@@ -30,27 +30,27 @@ Because soap-ws depends on a list of external dependencies that are not publishe
     {...
      :repositories [["enonic" "https://repo.enonic.com/public/"]
                     ...]
-     :dependencies [[io.xapix/paos "0.2.1-SNAPSHOT"]
+     :dependencies [[io.xapix/paos "0.2.1"]
                     ...]
     }
 
 ## boot
 
     (set-env! :repositories #(conj % ["enonic" {:url "https://repo.enonic.com/public/"}])
-              :dependencies #(conj % [io.xapix/paos "0.2.1-SNAPSHOT"])
+              :dependencies #(conj % [io.xapix/paos "0.2.1"])
 
 ## deps.edn
 
     {...
      :mvn/repos {"enonic" {:url "https://repo.enonic.com/public/"}}}}
-     :deps {io.xapix/paos {:mvn/version "0.2.1-SNAPSHOT"}
+     :deps {io.xapix/paos {:mvn/version "0.2.1"}
             ...}
     ...
     }
 
 ## Command line interface
 
-You can examine any WSDL with simple command line interface. If you already have all required repos in your deps.edn just execute `clj -Sdeps '{:deps {io.xapix/paos {:mvn/version "0.2.1-SNAPSHOT"}}}' -m paos.core -h` and check available options.
+You can examine any WSDL with simple command line interface. If you already have all required repos in your deps.edn just execute `clj -Sdeps '{:deps {io.xapix/paos {:mvn/version "0.2.1"}}}' -m paos.core -h` and check available options.
 
 Or you can use standalone script with everything inplace:
 
@@ -59,7 +59,7 @@ Or you can use standalone script with everything inplace:
 set -e
 
 MVN_REPOS='{"enonic" {:url "https://repo.enonic.com/public/"}}'
-DEPS='{io.xapix/paos {:mvn/version "0.2.1-SNAPSHOT"}}'
+DEPS='{io.xapix/paos {:mvn/version "0.2.1"}}'
 
 clojure -Srepro -Sdeps "{:deps $DEPS :mvn/repos $MVN_REPOS}" -m paos.core $@
 ```

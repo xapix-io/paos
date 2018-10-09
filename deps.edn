@@ -2,7 +2,7 @@
         org.clojure/data.xml     {:mvn/version "0.2.0-alpha5"}
         org.clojure/data.zip     {:mvn/version "0.1.2"}
         org.reficio/soap-legacy  {:mvn/version "1.0.0-SNAPSHOT"
-                                  :exclusions [xmlbeans/xbean]}
+                                  :exclusions  [xmlbeans/xbean]}
         org.reficio/soap-builder {:mvn/version "1.0.0-SNAPSHOT"}
         selmer                   {:mvn/version "1.12.1"}
         inflections              {:mvn/version "0.13.0"}
