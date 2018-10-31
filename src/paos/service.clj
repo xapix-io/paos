@@ -263,7 +263,10 @@
                                                (get-fields this)))
                                     (data-xml/cdata "{% endwith %}")))
             [(when (is-optional? this)
-               (data-xml/cdata "{% if ctx %}"))
+               (data-xml/cdata (str "{% if ctx." (if (is-array? this)
+                                                   (plural tag)
+                                                   tag)
+                                    " %}")))
              (when (is-array? this)
                (data-xml/cdata (str "{% for item in ctx." (plural tag) " %}")))
              (when-not root?
