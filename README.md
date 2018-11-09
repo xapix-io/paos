@@ -133,13 +133,13 @@ soap-service
 ;;                              :url "another service url"}}
 ```
 
-Each operation is an object with implemented with paos.service/Service methods which you can use to get the data necessary for that service:
+Each operation is an object implemented with paos.service/Service methods which you can use to get the data necessary for that service:
 
 ```clojure
 
 (require '[paos.service :as service])
 
-(let [srv (get-in soap-service ["SomeServiceBinding" "operation1"]]
+(let [srv (get-in soap-service ["SomeServiceBinding" :operations "operation1"]]
       (service/request-mapping srv))
   ;; => {"Envelope" {"Headers" []
   ;;                 "Body" {"SomeWrapper" {"Value" {:__value {:__type "string"}}}}}}
