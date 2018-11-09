@@ -24,3 +24,9 @@ Please file bug reports and feature requests to https://github.com/xapix-io/paos
     - "Add x", "Fix y", "Support z", "Remove x"
 6. Wrap the body at 72 characters
 7. Use the body to explain what and why vs. how
+
+## Contributors
+
+* [@DG4227](https://github.com/DG4227)
+* [@zarkone](https://github.com/zarkone)
+* [@daemianmack](https://github.com/daemianmack)

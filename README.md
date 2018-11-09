@@ -195,10 +195,10 @@ To build the actual XML payload you have to use `wrap-body` function from the se
 ```clojure
 (require '[paos.service :as service])
 
-(let [srv (get-in soap-service ["SomeServiceBinding" "operation1"]
-                  mapping (service/request-mapping srv)
-                  context (do-something-with-mapping mapping)]
-      (service/wrap-body srv context))
+(let [srv (get-in soap-service ["SomeServiceBinding" :operations "operation1"])
+      mapping (service/request-mapping srv)
+      context (do-something-with-mapping mapping)]
+  (service/wrap-body srv context))
   ;; => "<xml>...</xml>"
 ```
 
@@ -211,15 +211,16 @@ Now you can use your favorite http library to make the request to the service:
 (require '[paos.service :as service])
 
 (let [soap-url (:url soap-service)
-      srv (get-in soap-service ["SomeServiceBinding" "operation1"]
-                  soap-headers (service/soap-headers srv)
-                  content-type (service/content-type srv)
-                  mapping (service/request-mapping srv)
-                  context (do-something-with-mapping mapping)
-                  body (service/wrap-body srv context)]
-      (client/post soap-url {:content-type content-type
-                             :headers soap-headers
-                             :body body}))
+      srv (get-in soap-service ["SomeServiceBinding" :operations "operation1"])
+      soap-headers (service/soap-headers srv)
+      content-type (service/content-type srv)
+      mapping (service/request-mapping srv)
+      context (do-something-with-mapping mapping)
+      body (service/wrap-body srv context)]
+  (client/post soap-url
+     {:content-type content-type
+      :headers soap-headers
+      :body body}))
   ;; => {:status 200
   ;;     :body "<xml>...</xml>"
   ;;     ...}
