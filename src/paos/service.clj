@@ -69,12 +69,13 @@
                                       (path->predicates (conj path-to-update (first rp))))))
       :__attrs (assoc-in {}
                          (map tag-fix (conj path-to-update :__attrs (first rp) :__value))
-                         (data-zip-xml/attr (if (not-empty path-to-update)
-                                              (apply data-zip-xml/xml1->
-                                                     root
-                                                     (path->predicates path-to-update))
-                                              root)
-                                            (first rp)))
+                         (some->
+                          (if (not-empty path-to-update)
+                            (apply data-zip-xml/xml1->
+                                   root
+                                   (path->predicates path-to-update))
+                            root)
+                          (data-zip-xml/attr (first rp))))
       :__value (assoc-in {}
                          (map tag-fix (conj path-to-update :__value))
                          (some->
