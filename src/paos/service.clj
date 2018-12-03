@@ -321,6 +321,9 @@
      []
      msg)))
 
+(defn render-template [template context]
+  (selmer/render template context))
+
 (defn ->service [action version request-msg response-msg fault-msg]
   (let [request-element  (xml->element request-msg)
         response-element (xml->element response-msg)
@@ -349,7 +352,15 @@
 
       (wrap-body         [this context]
         (let [template (request-template this)]
-          (selmer/render template context)))
+          (render-template template context)))
+
+      (wrap-response     [this context]
+        (let [template (response-template this)]
+          (render-template template context)))
+
+      (wrap-fault     [this context]
+        (let [template (fault-template this)]
+          (render-template template context)))
 
       (response-xml      [_] (get-original response-element))
       (response-mapping  [_] (->mapping response-element))
