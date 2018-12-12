@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.xapix</groupId>
     <artifactId>paos</artifactId>
-    <version>0.2.4</version>
+    <version>0.2.5-SNAPSHOT</version>
     <name>paos</name>
     <dependencies>
         <dependency>
