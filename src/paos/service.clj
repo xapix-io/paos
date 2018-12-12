@@ -136,18 +136,20 @@
   (request-xml       [this])
   (request-mapping   [this])
   (request-template  [this])
+  ;; TODO consider to change method name to wrap/parse-request
   (wrap-body         [this context])
-  (wrap-response     [this context])
-  (wrap-fault        [this context])
+  (parse-body        [this request-xml])
 
   (response-xml      [this])
   (response-mapping  [this])
   (response-template [this])
+  (wrap-response     [this context])
   (parse-response    [this response-xml])
 
   (fault-xml         [this])
   (fault-mapping     [this])
   (fault-template    [this])
+  (wrap-fault        [this context])
   (parse-fault       [this fault-xml]))
 
 (defn- content->fields [content type optional? enumeration]
@@ -323,7 +325,7 @@
      []
      msg)))
 
-(defn render-template [template context]
+(defn- render-template [template context]
   (selmer/render template context))
 
 (defn ->service [action version request-msg response-msg fault-msg]
@@ -356,17 +358,17 @@
         (let [template (request-template this)]
           (render-template template context)))
 
-      (wrap-response     [this context]
-        (let [template (response-template this)]
-          (render-template template context)))
-
-      (wrap-fault     [this context]
-        (let [template (fault-template this)]
-          (render-template template context)))
+      (parse-body        [this request-xml]
+        (let [parse-fn (->parse-fn request-element)]
+          (parse-fn request-xml)))
 
       (response-xml      [_] (get-original response-element))
       (response-mapping  [_] (->mapping response-element))
       (response-template [_] (->template response-element))
+
+      (wrap-response     [this context]
+        (let [template (response-template this)]
+          (render-template template context)))
 
       (parse-response    [this response-xml]
         (let [parse-fn (->parse-fn response-element)]
@@ -375,6 +377,10 @@
       (fault-xml         [_] (get-original fault-element))
       (fault-mapping     [_] (->mapping fault-element))
       (fault-template    [_] (->template fault-element))
+
+      (wrap-fault     [this context]
+        (let [template (fault-template this)]
+          (render-template template context)))
 
       (parse-fault       [this fault-xml]
         (let [parse-fn (->parse-fn fault-element)]
