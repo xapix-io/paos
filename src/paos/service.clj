@@ -137,6 +137,8 @@
   (request-mapping   [this])
   (request-template  [this])
   (wrap-body         [this context])
+  (wrap-response     [this context])
+  (wrap-fault        [this context])
 
   (response-xml      [this])
   (response-mapping  [this])
