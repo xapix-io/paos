@@ -9,17 +9,17 @@
     <dependency>
       <groupId>selmer</groupId>
       <artifactId>selmer</artifactId>
-      <version>1.12.1</version>
+      <version>1.12.40</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>tools.cli</artifactId>
-      <version>0.4.1</version>
+      <version>1.0.206</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>data.zip</artifactId>
-      <version>0.1.2</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>net.sf.saxon</groupId>
@@ -40,12 +40,12 @@
     <dependency>
       <groupId>inflections</groupId>
       <artifactId>inflections</artifactId>
-      <version>0.13.0</version>
+      <version>0.13.2</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>data.xml</artifactId>
-      <version>0.2.0-alpha5</version>
+      <version>0.2.0-alpha6</version>
     </dependency>
   </dependencies>
   <build>

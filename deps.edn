@@ -1,12 +1,11 @@
-{:deps {org.clojure/clojure      {:mvn/version "1.9.0"}
-        org.clojure/data.xml     {:mvn/version "0.2.0-alpha5"}
-        org.clojure/data.zip     {:mvn/version "0.1.2"}
+{:deps {org.clojure/data.xml     {:mvn/version "0.2.0-alpha6"}
+        org.clojure/data.zip     {:mvn/version "1.0.0"}
         org.reficio/soap-builder {:mvn/version "1.0.0-SNAPSHOT"
                                   :exclusions [net.sf.saxon/saxon]}
         net.sf.saxon/saxon       {:mvn/version "9.1.0.8"}
-        selmer/selmer            {:mvn/version "1.12.1"}
-        inflections/inflections  {:mvn/version "0.13.0"}
-        org.clojure/tools.cli    {:mvn/version "0.4.1"}}
+        selmer/selmer            {:mvn/version "1.12.40"}
+        inflections/inflections  {:mvn/version "0.13.2"}
+        org.clojure/tools.cli    {:mvn/version "1.0.206"}}
 
  :mvn/repos {"enonic"   {:url "https://repo.enonic.com/public/"}
              "central"  {:url "https://repo1.maven.org/maven2/"}
