@@ -11,6 +11,7 @@ pom.xml.asc
 /.cpcache/
 /resources/*.wsdl
 /dist/
+/.lsp/
 .lein-deps-sum
 .lein-repl-history
 .lein-plugins/

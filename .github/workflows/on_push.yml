@@ -1,0 +1,58 @@
+name: Run tests
+
+on: [push]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '8'
+
+    - uses: DeLaGuardo/setup-clojure@3.5
+      with:
+        cli: 1.10.3.875
+
+    - uses: actions/checkout@v2.3.4
+
+    - name: Cache clojure dependencies
+      uses: actions/cache@v2.1.4
+      with:
+        path: ~/.m2/repository
+        key: ${{ matrix.clojure }}-clojure-${{ hashFiles('**/deps.edn') }}
+        restore-keys: |
+          ${{ matrix.clojure }}-clojure-
+
+    - name: Run tests 1.8
+      run: |
+        clojure -M:1.8:test:runner
+
+    - name: Run tests 1.9
+      run: |
+        clojure -M:1.9:test:runner
+
+    - name: Run tests 1.10.3
+      run: |
+        clojure -M:1.10:test:runner
+
+    - name: Run tests 1.11
+      run: |
+        clojure -M:1.11:test:runner
+
+    - name: Set up Clojars
+      uses: actions/setup-java@v2
+      with: # running setup-java again overwrites the settings.xml
+        distribution: 'adopt'
+        java-version: '8'
+        server-id: clojars # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username: CLOJARS_USERNAME # env variable for username in deploy
+        server-password: CLOJARS_DEPLOY_TOKEN # env variable for token in deploy
+
+    - name: Publish to Clojars
+      run: mvn deploy
+      env:
+        CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+        CLOJARS_DEPLOY_TOKEN: ${{ secrets.CLOJARS_DEPLOY_TOKEN }}

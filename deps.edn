@@ -1,10 +1,11 @@
-{:deps {org.clojure/clojure      {:mvn/version "1.9.0"}
-        org.clojure/data.xml     {:mvn/version "0.2.0-alpha5"}
-        org.clojure/data.zip     {:mvn/version "0.1.2"}
-        org.reficio/soap-builder {:mvn/version "1.0.0-SNAPSHOT"}
-        selmer                   {:mvn/version "1.12.1"}
-        inflections              {:mvn/version "0.13.0"}
-        org.clojure/tools.cli    {:mvn/version "0.4.1"}}
+{:deps {org.clojure/data.xml     {:mvn/version "0.2.0-alpha6"}
+        org.clojure/data.zip     {:mvn/version "1.0.0"}
+        org.reficio/soap-builder {:mvn/version "1.0.0-SNAPSHOT"
+                                  :exclusions [net.sf.saxon/saxon]}
+        net.sf.saxon/saxon       {:mvn/version "9.1.0.8"}
+        selmer/selmer            {:mvn/version "1.12.40"}
+        inflections/inflections  {:mvn/version "0.13.2"}
+        org.clojure/tools.cli    {:mvn/version "1.0.206"}}
 
  :mvn/repos {"enonic"   {:url "https://repo.enonic.com/public/"}
              "central"  {:url "https://repo1.maven.org/maven2/"}
@@ -16,14 +17,14 @@
  :aliases
  {:1.8    {:override-deps {org.clojure/clojure {:mvn/version "1.8.0"}}}
   :1.9    {:override-deps {org.clojure/clojure {:mvn/version "1.9.0"}}}
-  :master {:override-deps {org.clojure/clojure {:mvn/version "1.10.0-master-SNAPSHOT"}}}
+  :1.10   {:override-deps {org.clojure/clojure {:mvn/version "1.10.3"}}}
+  :1.11   {:override-deps {org.clojure/clojure {:mvn/version "1.11.0-alpha1"}}}
 
   :test {:extra-paths ["test" "test_resources"]
-         :extra-deps  {org.clojure/test.check {:mvn/version "RELEASE"}
-                       clj-http               {:mvn/version "RELEASE"}}}
+         :extra-deps  {clj-http/clj-http {:mvn/version "3.12.2"}}}
 
-  :runner {:extra-deps {com.cognitect/test-runner
+  :runner {:extra-deps {io.github.cognitect-labs/test-runner
                         {:git/url "https://github.com/cognitect-labs/test-runner"
-                         :sha     "76568540e7f40268ad2b646110f237a60295fa3c"}}
+                         :sha     "705ad25bbf0228b1c38d0244a36001c2987d7337"}}
            :main-opts  ["-m" "cognitect.test-runner"
                         "-d" "test"]}}}
