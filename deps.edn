@@ -18,7 +18,7 @@
  {:1.8    {:override-deps {org.clojure/clojure {:mvn/version "1.8.0"}}}
   :1.9    {:override-deps {org.clojure/clojure {:mvn/version "1.9.0"}}}
   :1.10   {:override-deps {org.clojure/clojure {:mvn/version "1.10.3"}}}
-  :1.11   {:override-deps {org.clojure/clojure {:mvn/version "1.11.0-alpha1"}}}
+  :1.11   {:override-deps {org.clojure/clojure {:mvn/version "1.11.1"}}}
 
   :test {:extra-paths ["test" "test_resources"]
          :extra-deps  {clj-http/clj-http {:mvn/version "3.12.2"}}}
