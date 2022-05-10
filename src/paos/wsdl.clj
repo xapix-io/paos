@@ -1,6 +1,8 @@
 (ns paos.wsdl
   (:require [clojure.java.io :as io]
+            [clojure.edn :as edn]
             [paos.service :as service])
+  (:refer-clojure :exclude [read read-string])
   (:import java.net.MalformedURLException
            javax.wsdl.Binding
            javax.wsdl.extensions.soap.SOAPBinding
@@ -10,7 +12,7 @@
            [org.reficio.ws.builder SoapBuilder]
            [org.reficio.ws.builder.core SoapOperationImpl Wsdl]))
 
-(defn ^SoapContext make-wsdl-context []
+(defn make-wsdl-context ^SoapContext []
   (.build (doto (SoapContext/builder)
             (.exampleContent false)
             (.typeComments true)
@@ -18,10 +20,10 @@
             (.buildOptional true)
             (.alwaysBuildHeaders true))))
 
-(defn ^java.net.URL make-wsdl-url [^String wsdl-path]
+(defn make-wsdl-url ^java.net.URL [^String wsdl-path]
   (io/as-url (io/file wsdl-path)))
 
-(defn ^Wsdl make-wsdl [^java.net.URL wsdl-url]
+(defn make-wsdl ^Wsdl [^java.net.URL wsdl-url]
   (Wsdl/parse wsdl-url))
 
 (defn- binding-has-instance? [^SoapBuilder binding-builder c]
@@ -37,7 +39,7 @@
     (binding-has-instance? binding-builder SOAP12Binding)
     :soap12
 
-    :otherwise :soap))
+    :else :soap))
 
 (defn make-operation [^SoapContext ctx ^SoapBuilder binding-builder ^SoapOperationImpl operation]
   (let [operation-name  (.getOperationName operation)
@@ -85,11 +87,10 @@
 
     (try
       (java.net.URL. path-or-content)
-      (catch MalformedURLException e
-        false))
+      (catch MalformedURLException _ false))
     (net-url->wsdl path-or-content)
 
-    :otherwise (wsdl-content->wsdl path-or-content)))
+    :else (wsdl-content->wsdl path-or-content)))
 
 (defn parse [wsdl]
   (let [^Wsdl wsdl (->wsdl wsdl)
@@ -100,9 +101,18 @@
                    (make-binding wsdl
                                  (.getLocalPart binding)
                                  ctx)
-                   (catch SoapBuilderException e
+                   (catch SoapBuilderException _
                      [(.getLocalPart binding) nil])))
                (.getBindings wsdl)))))
+
+(def readers {'paos.service.Element service/map->Element
+              'paos.service.Service service/map->Service})
+
+(defn read [stream]
+  (edn/read {:readers readers} stream))
+
+(defn read-string [string]
+  (edn/read-string {:readers readers} string))
 
 (comment
 
@@ -121,19 +131,23 @@
              200 (body-parser body)
              500 (fail-parser body))))
 
-  (let [soap-service   (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
-        srv            (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
-        soap-url       (get-in soap-service ["BLZServiceSOAP11Binding" :url])
-        soap-headers   (service/soap-headers srv)
-        content-type   (service/content-type srv)
-        mapping        (service/request-mapping srv)
-        context        (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
-        body           (service/wrap-body srv context)
-        resp-parser    (partial service/parse-response srv)
-        fault-parser   (partial service/parse-fault srv)]
+  (let [soap-service (wsdl/parse "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl")
+        _            (pr-str soap-service)
+        soap-service (read-string _)
+        srv          (get-in soap-service ["BLZServiceSOAP11Binding" :operations "getBank"])
+        soap-url     (get-in soap-service ["BLZServiceSOAP11Binding" :url])
+        soap-headers (service/soap-headers srv)
+        content-type (service/content-type srv)
+        mapping      (service/request-mapping srv)
+        context      (assoc-in mapping ["Envelope" "Body" "getBank" "blz" :__value] "28350000")
+        body         (service/wrap-body srv context)
+        resp-parser  (partial service/parse-response srv)
+        fault-parser (partial service/parse-fault srv)]
     (-> soap-url
         (client/post {:content-type content-type
                       :body         body
                       :headers      (merge {} soap-headers)
                       :do-not-throw true})
-        (parse-response resp-parser fault-parser))))
+        (parse-response resp-parser fault-parser)))
+
+  )

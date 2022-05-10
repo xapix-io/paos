@@ -21,8 +21,8 @@
     (string/starts-with? comment "Optional:")
     {:optional true}
 
-    (re-matches #"type: ([a-zA-Z]+)$" comment)
-    {:type (string/trim (second (re-matches #"type: ([a-zA-Z]+)$" comment)))}
+    (re-matches #"type: ([a-zA-Z0-9]+)$" comment)
+    {:type (string/trim (second (re-matches #"type: ([a-zA-Z0-9]+)$" comment)))}
 
     (string/starts-with? comment "Zero or more repetitions:")
     {:min-occurs 0}
@@ -36,8 +36,8 @@
       {:min-occurs (Integer/parseInt min)
        :max-occurs (Integer/parseInt max)})
 
-    (re-matches #"(type: ([a-zA-Z]+)|anonymous type) - enumeration: \[(.*)\]" comment)
-    (let [matcher     (re-matches #"(type: ([a-zA-Z]+)|anonymous type) - enumeration: \[(.*)\]" comment)
+    (re-matches #"(type: ([a-zA-Z0-9]+)|anonymous type) - enumeration: \[(.*)\]" comment)
+    (let [matcher     (re-matches #"(type: ([a-zA-Z0-9]+)|anonymous type) - enumeration: \[(.*)\]" comment)
           enumeration (mapv string/trim
                             (string/split (nth matcher 3)
                                           #","))
@@ -45,8 +45,7 @@
       {:enumeration enumeration
        :type        type})
 
-    :otherwise
-    nil))
+    :else nil))
 
 (defn tag-name= [tagname]
   (fn [loc]
@@ -84,13 +83,6 @@
                           data-zip-xml/text))
       (recur (first rp) (rest rp) (conj path-to-update fp)))))
 
-(defn- deep-merge
-  "Like merge, but merges maps recursively."
-  [& maps]
-  (if (every? map? maps)
-    (apply merge-with deep-merge maps)
-    (last maps)))
-
 (defn- deep-merge-with
   "Like merge-with, but merges maps recursively, applying the given fn
   only when there's a non-map at a particular level."
@@ -109,9 +101,9 @@
                                      (deep-merge-with custom-merge
                                                       v1 (nth v2 idx)))
                                    v1))
-    :otherwise   v2))
+    :else        v2))
 
-(defprotocol Element
+(defprotocol IElement
   (get-original [this])
   (get-tag      [this])
   (get-fields   [this])
@@ -127,7 +119,190 @@
   (is-leaf?     [this])
   (is-enum?     [this]))
 
-(defprotocol Service
+(defn- content->fields [content type optional? enumeration]
+  (let [content (filter #(not (string/starts-with? % "\n")) content)]
+    (loop [el (first content) els (rest content) comments [] fields []]
+      (if-not el
+        fields
+        (cond
+          (string? el)
+          {:__value
+           (cond-> {:__type type}
+             optional?   (merge {:__optional? true})
+             enumeration (merge {:__enum enumeration}))}
+
+          (instance? Comment el)
+          (recur (first els) (rest els) (conj comments (:content el)) fields)
+
+          :else
+          (recur (first els) (rest els) [] (conj fields (node->element el comments nil))))))))
+
+(defn- string->stream
+  ([^String s] (string->stream s "UTF-8"))
+  ([^String s ^String encoding]
+   (-> s
+       (.getBytes encoding)
+       (java.io.ByteArrayInputStream.))))
+
+(defrecord Element [original-xml
+                    tag attrs fields
+                    type min-occurs max-occurs
+                    optional enumeration]
+  IElement
+  (get-original [_] original-xml)
+
+  (get-tag [_] tag)
+
+  (get-fields [_] fields)
+
+  (get-attrs [_] attrs)
+
+  (get-type [_] type)
+
+  (get-path [this] (get-path this identity))
+  (get-path [this fix-fn]
+    (conj (if (is-array? this)
+            [0]
+            [])
+          (fix-fn (get-tag this))))
+
+  (get-paths [this] (get-paths this identity []))
+  (get-paths [this fix-fn] (get-paths this fix-fn []))
+  (get-paths [this fix-fn path]
+    (let [fields         (get-fields this)
+          this-path      (apply (partial conj path) (get-path this fix-fn))
+          paths-to-attrs (map (fn [[attr-name attr-value]]
+                                (when (= attr-value "?")
+                                  {:path (conj this-path :__attrs (fix-fn attr-name) :__value)}))
+                              (get-attrs this))]
+      (filter identity
+              (concat paths-to-attrs
+                      (if (is-leaf? this)
+                        [{:path (conj this-path :__value)}]
+                        (flatten
+                         (when-not (map? fields)
+                           (map (fn [c]
+                                  (get-paths c fix-fn this-path))
+                                fields))))))))
+
+  (->mapping [this] (->mapping this tag-fix))
+  (->mapping [this fix-fn]
+    (let [m ((if (is-array? this)
+               vector
+               identity)
+             {(fix-fn tag)
+              (merge (if-let [attrs (not-empty
+                                     (->> attrs
+                                          (filter (fn [[_ attrv]]
+                                                    (= "?" attrv)))
+                                          (map (fn [[attr-name _]]
+                                                 [(fix-fn attr-name) {:__value {:__type "string"}}]))
+                                          (into {})))]
+                       {:__attrs attrs}
+                       {})
+                     (apply merge
+                            (-> this
+                                (get-fields)
+                                (->> (map (fn [c]
+                                            (if (satisfies? IElement c)
+                                              (->mapping c fix-fn)
+                                              (into {} [c]))))))))})]
+      (if (vector? m)
+        {(-> tag fix-fn plural) m}
+        m)))
+
+  (->template [this]
+    (data-xml/indent-str
+     (->template this true)))
+  (->template [this root?]
+    (let [origin-tag (get-tag this)
+          tag (tag-fix (get-tag this))]
+      (if root?
+        (data-xml/element origin-tag
+                          attrs
+                          (conj (into [(data-xml/cdata (str "{% with ctx=" tag " %}"))]
+                                      (map (fn [c]
+                                             (when (satisfies? IElement c)
+                                               (->template c false)))
+                                           (get-fields this)))
+                                (data-xml/cdata "{% endwith %}")))
+        [(when (is-optional? this)
+           (data-xml/cdata (str "{% if ctx." (if (is-array? this)
+                                               (plural tag)
+                                               tag)
+                                " %}")))
+         (when (is-array? this)
+           (data-xml/cdata (str "{% for item in ctx." (plural tag) " %}")))
+         (when-not root?
+           (data-xml/cdata (str "{% with ctx=" (if (is-array? this)
+                                                 (str "item." tag)
+                                                 (str "ctx." tag))
+                                " %}")))
+         (apply data-xml/element origin-tag
+                (->> attrs
+                     (map (fn [[attr-name attr-value]]
+                            [attr-name (when (= attr-value "?")
+                                         (str "{{ctx.__attrs." (tag-fix attr-name) ".__value}}"))]))
+                     (into {}))
+                (let [fields (get-fields this)]
+                  (if (map? fields)
+                    [(data-xml/cdata (str "{{ctx.__value}}"))]
+                    (map (fn [c]
+                           (if (satisfies? IElement c)
+                             (->template c false)
+                             (data-xml/cdata (str "{{ctx.__value}}"))))
+                         fields))))
+         (when-not root?
+           (data-xml/cdata "{% endwith %}"))
+         (when (is-array? this)
+           (data-xml/cdata "{% endfor %}"))
+         (when (is-optional? this)
+           (data-xml/cdata "{% endif %}"))])))
+
+  (->parse-fn [this]
+    (fn [xml]
+      (let [xml (-> xml string->stream (data-xml/parse :namespace-aware true) zip/xml-zip)]
+        (apply deep-merge-with custom-merge
+               (map (partial xml->map xml)
+                    (get-paths this))))))
+
+  (is-optional? [_] (or optional (= min-occurs 0)))
+
+  (is-array? [_] (boolean (or min-occurs (and max-occurs (> max-occurs 1)))))
+
+  (is-leaf? [_] (or (empty? fields)
+                    (contains? fields :__value)))
+
+  (is-enum? [_] (boolean (not-empty enumeration))))
+
+(defn- node->element [{:keys [tag attrs content]
+                       :or   {content '()
+                              attrs   {}}}
+                      comments
+                      original-xml]
+  (let [{:keys [type min-occurs max-occurs
+                optional enumeration]} (into {} (map parse-comment comments))
+        fields                         (content->fields content
+                                                        type
+                                                        (or optional (= min-occurs 0))
+                                                        enumeration)]
+    (->Element original-xml tag attrs fields
+               type min-occurs max-occurs
+               optional enumeration)))
+
+(defn xml->element [msg]
+  (when (not-empty msg)
+    (node->element
+     (data-xml/parse (java.io.StringReader. msg)
+                     :namespace-aware false
+                     :include-node? #{:element :characters :comment})
+     []
+     msg)))
+
+(defn- render-template [template context]
+  (selmer/render template context))
+
+(defprotocol IService
   (content-type      [this])
   (soap-headers      [this])
   (soap-action       [this])
@@ -152,236 +327,62 @@
   (wrap-fault        [this context])
   (parse-fault       [this fault-xml]))
 
-(defn- content->fields [content type optional? enumeration]
-  (let [content (filter #(not (string/starts-with? % "\n")) content)]
-    (loop [el (first content) els (rest content) comments [] fields []]
-      (if-not el
-        fields
-        (cond
-          (string? el)
-          {:__value
-           (cond-> {:__type type}
-             optional?   (merge {:__optional? true})
-             enumeration (merge {:__enum enumeration}))}
+(defrecord Service [action version request-element response-element fault-element]
+  IService
+  (content-type      [this]
+    (case (soap-version this)
+      "soap"   "text/xml"
+      "soap12" (str "application/soap+xml;"
+                    (when-not (empty? (soap-action this))
+                      (format "action=\"%s\"" (soap-action this))))))
+  (soap-headers      [this]
+    (case (soap-version this)
+      "soap"   {"SOAPAction" (soap-action this)}
+      "soap12" {}))
+  (soap-action       [_] action)
+  (soap-version      [_]
+    (if (keyword? version)
+      (name version)
+      version))
 
-          (instance? Comment el)
-          (recur (first els) (rest els) (conj comments (:content el)) fields)
+  (request-xml       [_] (get-original request-element))
+  (request-mapping   [_] (->mapping request-element))
+  (request-template  [_] (->template request-element))
 
-          :otherwise
-          (recur (first els) (rest els) [] (conj fields (node->element el comments nil))))))))
+  (wrap-body         [this context]
+    (let [template (request-template this)]
+      (render-template template context)))
 
-(defn- string->stream
-  ([^String s] (string->stream s "UTF-8"))
-  ([^String s ^String encoding]
-   (-> s
-       (.getBytes encoding)
-       (java.io.ByteArrayInputStream.))))
+  (parse-body        [_ request-xml]
+    (let [parse-fn (->parse-fn request-element)]
+      (parse-fn request-xml)))
 
-(defn- node->element [{:keys [tag attrs content]
-                       :or   {content '()
-                              attrs   {}}}
-                      comments
-                      original-xml]
-  (let [{:keys [type min-occurs max-occurs
-                optional enumeration]} (into {} (map parse-comment comments))
-        fields                         (content->fields content
-                                                        type
-                                                        (or optional (= min-occurs 0))
-                                                        enumeration)]
-    (reify
-      Element
-      (get-original [_] original-xml)
+  (response-xml      [_] (get-original response-element))
+  (response-mapping  [_] (->mapping response-element))
+  (response-template [_] (->template response-element))
 
-      (get-tag [_] tag)
+  (wrap-response     [this context]
+    (let [template (response-template this)]
+      (render-template template context)))
 
-      (get-fields [_] fields)
+  (parse-response    [_ response-xml]
+    (let [parse-fn (->parse-fn response-element)]
+      (parse-fn response-xml)))
 
-      (get-attrs [_] attrs)
+  (fault-xml         [_] (get-original fault-element))
+  (fault-mapping     [_] (->mapping fault-element))
+  (fault-template    [_] (->template fault-element))
 
-      (get-type [_] type)
+  (wrap-fault     [this context]
+    (let [template (fault-template this)]
+      (render-template template context)))
 
-      (get-path [this] (get-path this identity))
-      (get-path [this fix-fn]
-        (conj (if (is-array? this)
-                [0]
-                [])
-              (fix-fn (get-tag this))))
-
-      (get-paths [this] (get-paths this identity []))
-      (get-paths [this fix-fn] (get-paths this fix-fn []))
-      (get-paths [this fix-fn path]
-        (let [fields         (get-fields this)
-              this-path      (apply (partial conj path) (get-path this fix-fn))
-              paths-to-attrs (map (fn [[attr-name attr-value]]
-                                    (when (= attr-value "?")
-                                      {:path (conj this-path :__attrs (fix-fn attr-name) :__value)}))
-                                  (get-attrs this))]
-          (filter identity
-                  (concat paths-to-attrs
-                          (if (is-leaf? this)
-                            [{:path (conj this-path :__value)}]
-                            (flatten
-                             (if-not (map? fields)
-                               (map (fn [c]
-                                      (get-paths c fix-fn this-path))
-                                    fields))))))))
-
-      (->mapping [this] (->mapping this tag-fix))
-      (->mapping [this fix-fn]
-        (let [m ((if (is-array? this)
-                   vector
-                   identity)
-                 {(fix-fn tag)
-                  (merge (if-let [attrs (not-empty
-                                         (->> attrs
-                                             (filter (fn [[_ attrv]]
-                                                       (= "?" attrv)))
-                                             (map (fn [[attr-name _]]
-                                                    [(fix-fn attr-name) {:__value {:__type "string"}}]))
-                                             (into {})))]
-                           {:__attrs attrs}
-                           {})
-                         (apply merge
-                                (-> this
-                                    (get-fields)
-                                    (->> (map (fn [c]
-                                               (if (satisfies? Element c)
-                                                 (->mapping c fix-fn)
-                                                 (into {} [c]))))))))})]
-          (if (vector? m)
-            {(-> tag fix-fn plural) m}
-            m)))
-
-      (->template [this]
-        (data-xml/indent-str
-         (->template this true)))
-      (->template [this root?]
-        (let [origin-tag (get-tag this)
-              tag (tag-fix (get-tag this))]
-          (if root?
-            (data-xml/element origin-tag
-                              attrs
-                              (conj (into [(data-xml/cdata (str "{% with ctx=" tag " %}"))]
-                                          (map (fn [c]
-                                                 (if (satisfies? Element c)
-                                                   (->template c false)))
-                                               (get-fields this)))
-                                    (data-xml/cdata "{% endwith %}")))
-            [(when (is-optional? this)
-               (data-xml/cdata (str "{% if ctx." (if (is-array? this)
-                                                   (plural tag)
-                                                   tag)
-                                    " %}")))
-             (when (is-array? this)
-               (data-xml/cdata (str "{% for item in ctx." (plural tag) " %}")))
-             (when-not root?
-               (data-xml/cdata (str "{% with ctx=" (if (is-array? this)
-                                                     (str "item." tag)
-                                                     (str "ctx." tag))
-                                    " %}")))
-             (data-xml/element origin-tag
-                               (->> attrs
-                                   (map (fn [[attr-name attr-value]]
-                                          [attr-name (if (= attr-value "?")
-                                                       (str "{{ctx.__attrs." (tag-fix attr-name) ".__value}}"))]))
-                                   (into {}))
-                               (let [fields (get-fields this)]
-                                 (if (map? fields)
-                                   (data-xml/cdata (str "{{ctx.__value}}"))
-                                   (map (fn [c]
-                                          (if (satisfies? Element c)
-                                            (->template c false)
-                                            (data-xml/cdata (str "{{ctx.__value}}"))))
-                                        (get-fields this)))))
-             (when-not root?
-               (data-xml/cdata "{% endwith %}"))
-             (when (is-array? this)
-               (data-xml/cdata "{% endfor %}"))
-             (when (is-optional? this)
-               (data-xml/cdata "{% endif %}"))])))
-
-      (->parse-fn [this]
-        (fn [xml]
-          (let [xml (-> xml string->stream (data-xml/parse :namespace-aware true) zip/xml-zip)]
-            (apply deep-merge-with custom-merge
-                   (map (partial xml->map xml)
-                        (get-paths this))))))
-
-      (is-optional? [_] (or optional (= min-occurs 0)))
-
-      (is-array? [_] (boolean (or min-occurs (and max-occurs (> max-occurs 1)))))
-
-      (is-leaf? [_] (or (empty? fields)
-                        (contains? fields :__value)))
-
-      (is-enum? [_] (boolean (not-empty enumeration))))))
-
-(defn xml->element [msg]
-  (when (not-empty msg)
-    (node->element
-     (data-xml/parse (java.io.StringReader. msg)
-                     :namespace-aware false
-                     :include-node? #{:element :characters :comment})
-     []
-     msg)))
-
-(defn- render-template [template context]
-  (selmer/render template context))
+  (parse-fault       [_ fault-xml]
+    (let [parse-fn (->parse-fn fault-element)]
+      (parse-fn fault-xml))))
 
 (defn ->service [action version request-msg response-msg fault-msg]
   (let [request-element  (xml->element request-msg)
         response-element (xml->element response-msg)
         fault-element    (xml->element fault-msg)]
-    (reify
-      Service
-      (content-type      [this]
-        (case (soap-version this)
-          "soap"   "text/xml"
-          "soap12" (str "application/soap+xml;"
-                        (when-not (empty? (soap-action this))
-                          (format "action=\"%s\"" (soap-action this))))))
-      (soap-headers      [this]
-        (case (soap-version this)
-          "soap"   {"SOAPAction" (soap-action this)}
-          "soap12" {}))
-      (soap-action       [_] action)
-      (soap-version      [this]
-        (if (keyword? version)
-          (name version)
-          version))
-
-      (request-xml       [_] (get-original request-element))
-      (request-mapping   [_] (->mapping request-element))
-      (request-template  [_] (->template request-element))
-
-      (wrap-body         [this context]
-        (let [template (request-template this)]
-          (render-template template context)))
-
-      (parse-body        [this request-xml]
-        (let [parse-fn (->parse-fn request-element)]
-          (parse-fn request-xml)))
-
-      (response-xml      [_] (get-original response-element))
-      (response-mapping  [_] (->mapping response-element))
-      (response-template [_] (->template response-element))
-
-      (wrap-response     [this context]
-        (let [template (response-template this)]
-          (render-template template context)))
-
-      (parse-response    [this response-xml]
-        (let [parse-fn (->parse-fn response-element)]
-          (parse-fn response-xml)))
-
-      (fault-xml         [_] (get-original fault-element))
-      (fault-mapping     [_] (->mapping fault-element))
-      (fault-template    [_] (->template fault-element))
-
-      (wrap-fault     [this context]
-        (let [template (fault-template this)]
-          (render-template template context)))
-
-      (parse-fault       [this fault-xml]
-        (let [parse-fn (->parse-fn fault-element)]
-          (parse-fn fault-xml))))))
+    (->Service action version request-element response-element fault-element)))
