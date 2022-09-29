@@ -66,7 +66,7 @@
 
 (defn net-url->wsdl [net-url]
   (-> net-url
-      (java.net.URL.)
+      (io/as-url)
       make-wsdl))
 
 (defn wsdl-content->wsdl [wsdl-content]
@@ -80,11 +80,14 @@
 
 (defn ->wsdl [path-or-content]
   (cond
-    (.exists (io/file path-or-content))
+    (try
+      (.exists (io/file path-or-content))
+      (catch IllegalArgumentException e
+        false))
     (file->wsdl path-or-content)
 
     (try
-      (java.net.URL. path-or-content)
+      (io/as-url path-or-content)
       (catch MalformedURLException e
         false))
     (net-url->wsdl path-or-content)
