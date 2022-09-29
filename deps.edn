@@ -21,7 +21,8 @@
   :1.11   {:override-deps {org.clojure/clojure {:mvn/version "1.11.0-alpha1"}}}
 
   :test {:extra-paths ["test" "test_resources"]
-         :extra-deps  {clj-http/clj-http {:mvn/version "3.12.2"}}}
+         :extra-deps  {clj-http/clj-http {:mvn/version "3.12.2"}
+                       test/jar {:local/root "./test_resources/test.jar"}}}
 
   :runner {:extra-deps {io.github.cognitect-labs/test-runner
                         {:git/url "https://github.com/cognitect-labs/test-runner"
